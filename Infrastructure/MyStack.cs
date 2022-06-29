@@ -1,23 +1,75 @@
 using System.Threading.Tasks;
 using Pulumi;
 using AzureAD = Pulumi.AzureAD;
-using Pulumi.AzureNative.Resources;
-using Pulumi.AzureNative.Storage;
+using AzureNative = Pulumi.AzureNative;
 
 class MyStack : Stack
 {
     public MyStack()
     {
         // Create an Azure Resource Group
-        var resourceGroup = new ResourceGroup("azure-ad-example", new ResourceGroupArgs
-        {
-            ResourceGroupName = "azure-ad-example"
-        });
+        var resourceGroup = new AzureNative.Resources.ResourceGroup("azure-ad-example");
 
         // Create Azure AD resources
         var userReadRoleUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-user-read-role-id");
         var userWriteRoleUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-user-read-write-id");
         var localDevScopeUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-local-dev-scope-id");
+        var visualStudioAppId = "872cd9fa-d31f-45e0-9eab-6e460a02d1f1";
+        var azureCliAppId = "04b07795-8ddb-461a-bbee-02f9e1bf7b46";
+
+        var jimmyUser = Output.Create(AzureAD.GetUser.InvokeAsync(new AzureAD.GetUserArgs
+        {
+            UserPrincipalName = "jimmy.bogard_gmail.com#EXT#@jimmybogardgmail.onmicrosoft.com"
+        }));
+        var devGroup = new AzureAD.Group("azure-ad-example-localdev", new AzureAD.GroupArgs
+        {
+            DisplayName = "Azure AD Example Local Dev",
+            SecurityEnabled = true
+        });
+        var jimmyDevGroupMember = new AzureAD.GroupMember("azure-ad-example-jimmy-localdev-member",
+            new AzureAD.GroupMemberArgs
+            {
+                GroupObjectId = devGroup.ObjectId,
+                MemberObjectId = jimmyUser.Apply(jimmy => jimmy.ObjectId)
+            });
+
+        var clientUserAssignedIdentity = new AzureNative.ManagedIdentity.UserAssignedIdentity("azure-ad-example-azure-client-user", new AzureNative.ManagedIdentity.UserAssignedIdentityArgs
+        {
+            ResourceGroupName = resourceGroup.Name
+        });
+
+        var appServicePlan = new AzureNative.Web.AppServicePlan("azure-ad-example-app-service-plan",
+            new AzureNative.Web.AppServicePlanArgs
+            {
+                Kind = "linux",
+                ResourceGroupName = resourceGroup.Name,
+                Location = resourceGroup.Location,
+                Sku = new AzureNative.Web.Inputs.SkuDescriptionArgs
+                {
+                    Capacity = 1,
+                    Name = "F1",
+                    Tier = "Free",
+                    Size = "F1",
+                    Family = "F"
+                },
+                Reserved = true
+            });
+
+        var serverAppService = new AzureNative.Web.WebApp("azure-ad-example-server", new AzureNative.Web.WebAppArgs
+        {
+            Kind = "app,linux",
+            Location = resourceGroup.Location,
+            ResourceGroupName = resourceGroup.Name,
+            ServerFarmId = appServicePlan.Id,
+            Enabled = true,
+            HttpsOnly = true,
+            SiteConfig = new AzureNative.Web.Inputs.SiteConfigArgs
+            {
+                LinuxFxVersion = "DOTNETCORE|3.1",
+                AppCommandLine = "dotnet AzureServer.dll"
+            },
+        });
+
         var serverApplication = new AzureAD.Application("azure-ad-example-server", new AzureAD.ApplicationArgs
         {
             DisplayName = "Azure AD Example Server",
@@ -73,7 +125,11 @@ class MyStack : Stack
             },
             SinglePageApplication = new AzureAD.Inputs.ApplicationSinglePageApplicationArgs
             {
-                RedirectUris = "https://localhost:5001/swagger/oauth2-redirect.html"
+                RedirectUris =
+                {
+                    Output.Format($"https://{serverAppService.DefaultHostName}/swagger/oauth2-redirect.html"),
+                    "https://localhost:5001/swagger/oauth2-redirect.html"
+                }
             },
             Web = new AzureAD.Inputs.ApplicationWebArgs
             {
@@ -89,8 +145,6 @@ class MyStack : Stack
             {
                 ApplicationId = serverApplication.ApplicationId,
             });
-        var visualStudioAppId = "872cd9fa-d31f-45e0-9eab-6e460a02d1f1";
-        var azureCliAppId = "04b07795-8ddb-461a-bbee-02f9e1bf7b46";
 
         var visualStudio = new AzureAD.ApplicationPreAuthorized("azure-ad-example-server-preauth-visualstudio",
             new AzureAD.ApplicationPreAuthorizedArgs
@@ -112,23 +166,6 @@ class MyStack : Stack
                     localDevScopeUuid.Result
                 }
             });
-
-        var jimmyUser = Output.Create(AzureAD.GetUser.InvokeAsync(new AzureAD.GetUserArgs
-        {
-            UserPrincipalName = "jimmy.bogard_gmail.com#EXT#@jimmybogardgmail.onmicrosoft.com"
-        }));
-        var devGroup = new AzureAD.Group("azure-ad-example-localdev", new AzureAD.GroupArgs
-        {
-            DisplayName = "Azure AD Example Local Dev",
-            SecurityEnabled = true
-        });
-        var jimmyDevGroupMember = new AzureAD.GroupMember("azure-ad-example-jimmy-localdev-member",
-            new AzureAD.GroupMemberArgs
-            {
-                GroupObjectId = devGroup.ObjectId,
-                MemberObjectId = jimmyUser.Apply(jimmy => jimmy.ObjectId)
-            });
-
         var devGroupServerUserReadAssignment = new AzureAD.AppRoleAssignment(
             "azure-ad-example-localdev-server-user-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
             {
@@ -137,34 +174,15 @@ class MyStack : Stack
                 ResourceObjectId = serverServicePrincipal.ObjectId
             });
 
-        //// Create an Azure resource (Storage Account)
-        //var storageAccount = new StorageAccount("sa", new StorageAccountArgs
-        //{
-        //    ResourceGroupName = resourceGroup.Name,
-        //    Sku = new SkuArgs
-        //    {
-        //        Name = SkuName.Standard_LRS
-        //    },
-        //    Kind = Kind.StorageV2
-        //});
 
-        //// Export the primary key of the Storage Account
-        //this.PrimaryStorageKey = Output.Tuple(resourceGroup.Name, storageAccount.Name).Apply(names =>
-        //    Output.CreateSecret(GetStorageAccountPrimaryKey(names.Item1, names.Item2)));
 
         ServerApplicationClientId = serverApplication.ApplicationId;
+        ServerUrl = serverAppService.DefaultHostName;
     }
 
     [Output]
     public Output<string> ServerApplicationClientId { get; set; }
 
-    private static async Task<string> GetStorageAccountPrimaryKey(string resourceGroupName, string accountName)
-    {
-        var accountKeys = await ListStorageAccountKeys.InvokeAsync(new ListStorageAccountKeysArgs
-        {
-            ResourceGroupName = resourceGroupName,
-            AccountName = accountName
-        });
-        return accountKeys.Keys[0].Value;
-    }
+    [Output]
+    public Output<string> ServerUrl { get; set; }
 }
