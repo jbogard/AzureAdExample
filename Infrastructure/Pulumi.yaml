@@ -1,0 +1,3 @@
+name: Infrastructure
+runtime: dotnet
+description: Azure AD Example

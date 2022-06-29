@@ -69,13 +69,13 @@ namespace WebApplication2
                     Type = SecuritySchemeType.OAuth2,
                     Flows = new OpenApiOAuthFlows
                     {
-                        AuthorizationCode = new OpenApiOAuthFlow
+                        Implicit = new OpenApiOAuthFlow
                         {
                             AuthorizationUrl = new Uri($"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/authorize"),
                             TokenUrl = new Uri($"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token"),
                             Scopes = new Dictionary<string, string>
                             {
-                                {$"{serverApplicationId}/.default", "roles"}
+                                {"api://azure-ad-example-server/LocalDev", "roles"}
                             }
                         }
                     }
@@ -150,30 +150,10 @@ namespace WebApplication2
                                 Reference = new OpenApiReference
                                 {
                                     Type = ReferenceType.SecurityScheme,
-                                    Id = "OAuth Implicit"
-                                }
-                            }
-                        ] = roles,
-                        [
-                            new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.SecurityScheme,
                                     Id = "OAuth Auth Code"
                                 }
                             }
-                        ] = roles,
-                        [
-                            new OpenApiSecurityScheme
-                            {
-                                Reference = new OpenApiReference
-                                {
-                                    Type = ReferenceType.SecurityScheme,
-                                    Id = "OAuth2 Client Credentials"
-                                }
-                            }
-                        ] = roles,
+                        ] = roles
                     }
                 };
             }
