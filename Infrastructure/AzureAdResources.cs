@@ -1,6 +1,5 @@
 ﻿using Pulumi;
 using AzureAD = Pulumi.AzureAD;
-using AzureNative = Pulumi.AzureNative;
 
 public class AzureAdResources
 {

@@ -1,13 +1,12 @@
 ﻿using Pulumi;
-using Pulumi.AzureNative.Resources;
-using Pulumi.AzureNative.Web;
 using AzureAD = Pulumi.AzureAD;
 using AzureNative = Pulumi.AzureNative;
 
 public class Server
 {
-    public Server(ResourceGroup resourceGroup,
-        AppServicePlan appServicePlan, AzureAdResources azureAdResources)
+    public Server(AzureNative.Resources.ResourceGroup resourceGroup,
+       AzureNative.Web.AppServicePlan appServicePlan, 
+       AzureAdResources azureAdResources)
     {
         var serverAppService = new AzureNative.Web.WebApp("azure-ad-example-server", new AzureNative.Web.WebAppArgs
         {
