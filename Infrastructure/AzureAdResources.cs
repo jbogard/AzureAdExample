@@ -5,9 +5,13 @@ public class AzureAdResources
 {
     public AzureAdResources()
     {
+        var config = new Config();
+
+        var jimmyUpn = config.Require("jimmy-upn");
+
         var jimmyUser = Output.Create(AzureAD.GetUser.InvokeAsync(new AzureAD.GetUserArgs
         {
-            UserPrincipalName = "jimmy.bogard_gmail.com#EXT#@jimmybogardgmail.onmicrosoft.com"
+            UserPrincipalName = jimmyUpn
         }));
         var devGroup = new AzureAD.Group("azure-ad-example-localdev", new AzureAD.GroupArgs
         {
