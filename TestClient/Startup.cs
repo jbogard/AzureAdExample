@@ -33,8 +33,9 @@ namespace TestClient
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebApplication2", Version = "v1" });
             });
 
-            var managedIdentityClientId = "25a915cb-66e3-4029-b93b-c53dd050472f";
-            var tenantId = "e56b135d-b0e0-4ad8-8faa-1ca3915fe4b2";
+            var managedIdentityClientId = Configuration["ClientId"];
+            var tenantId = Configuration["TenantId"];
+            var applicationId = Configuration["Server:ApplicationId"];
             var options = new DefaultAzureCredentialOptions
             {
                 ManagedIdentityClientId = managedIdentityClientId,
@@ -46,12 +47,12 @@ namespace TestClient
             services.AddSingleton<TokenCredential>(new DefaultAzureCredential(options));
             services.AddTransient<AzureIdentityAuthHandler>();
             services.AddHttpClient<IWeatherForecastClient, WeatherForecastClient>()
-                .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://localhost:5001"))
+                .ConfigureHttpClient(client => client.BaseAddress = new Uri(Configuration["Server:BaseUrl"]))
                 .AddHttpMessageHandler(sp =>
                 {
                     var handler = sp.GetRequiredService<AzureIdentityAuthHandler>();
 
-                    handler.ServerApplicationId = "e04a370e-582c-4745-ad1e-cb30d36c3584";
+                    handler.ServerApplicationId = applicationId;
 
                     return handler;
                 });

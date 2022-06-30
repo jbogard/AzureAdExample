@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Pulumi;
 using AzureAD = Pulumi.AzureAD;
@@ -13,7 +14,6 @@ class MyStack : Stack
         // Create Azure AD resources
         var userReadRoleUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-user-read-role-id");
         var userWriteRoleUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-user-read-write-id");
-        var localDevScopeUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-local-dev-scope-id");
         var visualStudioAppId = "872cd9fa-d31f-45e0-9eab-6e460a02d1f1";
         var azureCliAppId = "04b07795-8ddb-461a-bbee-02f9e1bf7b46";
 
@@ -70,6 +70,7 @@ class MyStack : Stack
             },
         });
 
+        var localDevScopeUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-local-dev-scope-id");
         var serverApplication = new AzureAD.Application("azure-ad-example-server", new AzureAD.ApplicationArgs
         {
             DisplayName = "Azure AD Example Server",
@@ -173,16 +174,65 @@ class MyStack : Stack
                 PrincipalObjectId = devGroup.ObjectId,
                 ResourceObjectId = serverServicePrincipal.ObjectId
             });
+        var azureClientServerUserReadAssignment = new AzureAD.AppRoleAssignment(
+            "azure-ad-example-azure-client-server-user-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
+            {
+                AppRoleId = userReadRoleUuid.Result,
+                PrincipalObjectId = clientUserAssignedIdentity.PrincipalId,
+                ResourceObjectId = serverServicePrincipal.ObjectId
+            });
 
+        var clientAppService = new AzureNative.Web.WebApp("azure-ad-example-azure-client", new AzureNative.Web.WebAppArgs
+        {
+            Kind = "app,linux",
+            Location = resourceGroup.Location,
+            ResourceGroupName = resourceGroup.Name,
+            ServerFarmId = appServicePlan.Id,
+            Enabled = true,
+            HttpsOnly = true,
+            SiteConfig = new AzureNative.Web.Inputs.SiteConfigArgs
+            {
+                LinuxFxVersion = "DOTNETCORE|3.1",
+                AppCommandLine = "dotnet AzureClient.dll",
+                AppSettings = new[]
+                {
+                    new AzureNative.Web.Inputs.NameValuePairArgs
+                    {
+                        Name = "Server__BaseUrl",
+                        Value = Output.Format($"https://{serverAppService.DefaultHostName}")
+                    }
+                }
+            },
+            Identity = new AzureNative.Web.Inputs.ManagedServiceIdentityArgs
+            {
+                Type = AzureNative.Web.ManagedServiceIdentityType.UserAssigned,
+                UserAssignedIdentities = clientUserAssignedIdentity.Id.Apply(id =>
+                {
+                    var im = new Dictionary<string, object>
+                    {
+                        {id, new Dictionary<string, object>()}
+                    };
+                    return im;
+                })
+            }
+        });
 
-
+        ClientManagedIdentityClientId = clientUserAssignedIdentity.ClientId;
+        ClientDefaultHostName = clientAppService.DefaultHostName;
         ServerApplicationClientId = serverApplication.ApplicationId;
-        ServerUrl = serverAppService.DefaultHostName;
+        ServerDefaultHostName = serverAppService.DefaultHostName;
     }
+
+
+    [Output]
+    public Output<string> ClientManagedIdentityClientId { get; set; }
+
+    [Output]
+    public Output<string> ClientDefaultHostName { get; set; }
 
     [Output]
     public Output<string> ServerApplicationClientId { get; set; }
 
     [Output]
-    public Output<string> ServerUrl { get; set; }
+    public Output<string> ServerDefaultHostName { get; set; }
 }
