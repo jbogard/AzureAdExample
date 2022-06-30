@@ -1,44 +1,33 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Pulumi;
-using AzureAD = Pulumi.AzureAD;
 using AzureNative = Pulumi.AzureNative;
 
 class MyStack : Stack
 {
     public MyStack()
     {
-        // Create an Azure Resource Group
         var resourceGroup = new AzureNative.Resources.ResourceGroup("azure-ad-example");
 
-        // Create Azure AD resources
-        var userReadRoleUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-user-read-role-id");
-        var userWriteRoleUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-user-read-write-id");
-        var visualStudioAppId = "872cd9fa-d31f-45e0-9eab-6e460a02d1f1";
-        var azureCliAppId = "04b07795-8ddb-461a-bbee-02f9e1bf7b46";
+        var appServicePlan = CreateAppServicePlan(resourceGroup);
 
-        var jimmyUser = Output.Create(AzureAD.GetUser.InvokeAsync(new AzureAD.GetUserArgs
-        {
-            UserPrincipalName = "jimmy.bogard_gmail.com#EXT#@jimmybogardgmail.onmicrosoft.com"
-        }));
-        var devGroup = new AzureAD.Group("azure-ad-example-localdev", new AzureAD.GroupArgs
-        {
-            DisplayName = "Azure AD Example Local Dev",
-            SecurityEnabled = true
-        });
-        var jimmyDevGroupMember = new AzureAD.GroupMember("azure-ad-example-jimmy-localdev-member",
-            new AzureAD.GroupMemberArgs
-            {
-                GroupObjectId = devGroup.ObjectId,
-                MemberObjectId = jimmyUser.Apply(jimmy => jimmy.ObjectId)
-            });
+        var azureAdResources = new AzureAdResources();
 
-        var clientUserAssignedIdentity = new AzureNative.ManagedIdentity.UserAssignedIdentity("azure-ad-example-azure-client-user", new AzureNative.ManagedIdentity.UserAssignedIdentityArgs
-        {
-            ResourceGroupName = resourceGroup.Name
-        });
+        var server = new Server(resourceGroup, appServicePlan, azureAdResources);
 
-        var appServicePlan = new AzureNative.Web.AppServicePlan("azure-ad-example-app-service-plan",
+        var client = new Client(resourceGroup, appServicePlan, server);
+
+        var externalClient = new ExternalClient(server);
+
+        ExternalClientSecret = externalClient.ApplicationSecretValue;
+        ExternalClientApplicationId = externalClient.ApplicationApplicationId;
+        ClientManagedIdentityClientId = client.UserAssignedIdentityClientId;
+        ClientDefaultHostName = client.AppServiceDefaultHostName;
+        ServerApplicationClientId = server.ApplicationApplicationId;
+        ServerDefaultHostName = server.AppServiceDefaultHostName;
+    }
+
+    private static AzureNative.Web.AppServicePlan CreateAppServicePlan(AzureNative.Resources.ResourceGroup resourceGroup)
+    {
+        return new AzureNative.Web.AppServicePlan("azure-ad-example-app-service-plan",
             new AzureNative.Web.AppServicePlanArgs
             {
                 Kind = "linux",
@@ -54,210 +43,6 @@ class MyStack : Stack
                 },
                 Reserved = true
             });
-
-        var serverAppService = new AzureNative.Web.WebApp("azure-ad-example-server", new AzureNative.Web.WebAppArgs
-        {
-            Kind = "app,linux",
-            Location = resourceGroup.Location,
-            ResourceGroupName = resourceGroup.Name,
-            ServerFarmId = appServicePlan.Id,
-            Enabled = true,
-            HttpsOnly = true,
-            SiteConfig = new AzureNative.Web.Inputs.SiteConfigArgs
-            {
-                LinuxFxVersion = "DOTNETCORE|3.1",
-                AppCommandLine = "dotnet AzureServer.dll"
-            },
-        });
-
-        var localDevScopeUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-local-dev-scope-id");
-        var serverApplication = new AzureAD.Application("azure-ad-example-server", new AzureAD.ApplicationArgs
-        {
-            DisplayName = "Azure AD Example Server",
-            IdentifierUris =
-            {
-                "api://azure-ad-example-server"
-            },
-            Api = new AzureAD.Inputs.ApplicationApiArgs
-            {
-                MappedClaimsEnabled = true,
-                RequestedAccessTokenVersion = 2,
-                Oauth2PermissionScopes =
-                {
-                    new AzureAD.Inputs.ApplicationApiOauth2PermissionScopeArgs
-                    {
-                        AdminConsentDescription = "Local development",
-                        AdminConsentDisplayName = "LocalDev",
-                        Id = localDevScopeUuid.Result,
-                        Enabled = true,
-                        Value = "LocalDev",
-                        Type = "User"
-                    }
-                }
-            },
-            AppRoles =
-            {
-                new AzureAD.Inputs.ApplicationAppRoleArgs
-                {
-                    AllowedMemberTypes =
-                    {
-                        "User",
-                        "Application"
-                    },
-                    DisplayName = "User.Read",
-                    Enabled = true,
-                    Value = "User.Read",
-                    Description = "User.Read",
-                    Id = userReadRoleUuid.Result
-                },
-                new AzureAD.Inputs.ApplicationAppRoleArgs
-                {
-                    AllowedMemberTypes =
-                    {
-                        "User",
-                        "Application"
-                    },
-                    DisplayName = "User.Write",
-                    Enabled = true,
-                    Value = "User.Write",
-                    Description = "User.Write",
-                    Id = userWriteRoleUuid.Result
-                }
-            },
-            SinglePageApplication = new AzureAD.Inputs.ApplicationSinglePageApplicationArgs
-            {
-                RedirectUris =
-                {
-                    Output.Format($"https://{serverAppService.DefaultHostName}/swagger/oauth2-redirect.html"),
-                    "https://localhost:5001/swagger/oauth2-redirect.html"
-                }
-            },
-            Web = new AzureAD.Inputs.ApplicationWebArgs
-            {
-                ImplicitGrant = new AzureAD.Inputs.ApplicationWebImplicitGrantArgs
-                {
-                    AccessTokenIssuanceEnabled = true,
-                    IdTokenIssuanceEnabled = true
-                }
-            }
-        });
-        var serverServicePrincipal = new AzureAD.ServicePrincipal("azure-ad-example-server-service-principal",
-            new AzureAD.ServicePrincipalArgs
-            {
-                ApplicationId = serverApplication.ApplicationId,
-            });
-
-        var visualStudio = new AzureAD.ApplicationPreAuthorized("azure-ad-example-server-preauth-visualstudio",
-            new AzureAD.ApplicationPreAuthorizedArgs
-            {
-                AuthorizedAppId = visualStudioAppId,
-                ApplicationObjectId = serverApplication.ObjectId,
-                PermissionIds =
-                {
-                    localDevScopeUuid.Result
-                }
-            });
-        var azureCli = new AzureAD.ApplicationPreAuthorized("azure-ad-example-server-preauth-azurecli",
-            new AzureAD.ApplicationPreAuthorizedArgs
-            {
-                AuthorizedAppId = azureCliAppId,
-                ApplicationObjectId = serverApplication.ObjectId,
-                PermissionIds =
-                {
-                    localDevScopeUuid.Result
-                }
-            });
-        var devGroupServerUserReadAssignment = new AzureAD.AppRoleAssignment(
-            "azure-ad-example-localdev-server-user-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
-            {
-                AppRoleId = userReadRoleUuid.Result,
-                PrincipalObjectId = devGroup.ObjectId,
-                ResourceObjectId = serverServicePrincipal.ObjectId
-            });
-        var azureClientServerUserReadAssignment = new AzureAD.AppRoleAssignment(
-            "azure-ad-example-azure-client-server-user-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
-            {
-                AppRoleId = userReadRoleUuid.Result,
-                PrincipalObjectId = clientUserAssignedIdentity.PrincipalId,
-                ResourceObjectId = serverServicePrincipal.ObjectId
-            });
-
-        var clientAppService = new AzureNative.Web.WebApp("azure-ad-example-azure-client", new AzureNative.Web.WebAppArgs
-        {
-            Kind = "app,linux",
-            Location = resourceGroup.Location,
-            ResourceGroupName = resourceGroup.Name,
-            ServerFarmId = appServicePlan.Id,
-            Enabled = true,
-            HttpsOnly = true,
-            SiteConfig = new AzureNative.Web.Inputs.SiteConfigArgs
-            {
-                LinuxFxVersion = "DOTNETCORE|3.1",
-                AppCommandLine = "dotnet AzureClient.dll",
-                AppSettings = new[]
-                {
-                    new AzureNative.Web.Inputs.NameValuePairArgs
-                    {
-                        Name = "Server__BaseUrl",
-                        Value = Output.Format($"https://{serverAppService.DefaultHostName}")
-                    }
-                }
-            },
-            Identity = new AzureNative.Web.Inputs.ManagedServiceIdentityArgs
-            {
-                Type = AzureNative.Web.ManagedServiceIdentityType.UserAssigned,
-                UserAssignedIdentities = clientUserAssignedIdentity.Id.Apply(id =>
-                {
-                    var im = new Dictionary<string, object>
-                    {
-                        {id, new Dictionary<string, object>()}
-                    };
-                    return im;
-                })
-            }
-        });
-
-        var externalClientApplication = new AzureAD.Application("azure-ad-example-external-client", new AzureAD.ApplicationArgs
-        {
-            DisplayName = "Azure AD Example External Client",
-            Api = new AzureAD.Inputs.ApplicationApiArgs
-            {
-                RequestedAccessTokenVersion = 2,
-            }
-        });
-
-        var externalClientApplicationSecret = new AzureAD.ApplicationPassword(
-            "azure-ad-example-external-client-password",
-            new AzureAD.ApplicationPasswordArgs
-            {
-                ApplicationObjectId = externalClientApplication.ObjectId
-            }, new CustomResourceOptions
-            {
-                AdditionalSecretOutputs =
-                {
-                    "value"
-                }
-            });
-
-        var externalClientServicePrincipal = new AzureAD.ServicePrincipal("azure-ad-example-external-client-service-principal",
-            new AzureAD.ServicePrincipalArgs
-            {
-                ApplicationId = externalClientApplication.ApplicationId,
-            });
-        var externalClientServerUserReadAssignment = new AzureAD.AppRoleAssignment(
-            "azure-ad-example-external-client-server-user-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
-            {
-                AppRoleId = userReadRoleUuid.Result,
-                PrincipalObjectId = externalClientServicePrincipal.ObjectId,
-                ResourceObjectId = serverServicePrincipal.ObjectId
-            });
-
-        ExternalClientSecret = externalClientApplicationSecret.Value;
-        ExternalClientApplicationId = externalClientApplication.ApplicationId;
-        ClientManagedIdentityClientId = clientUserAssignedIdentity.ClientId;
-        ClientDefaultHostName = clientAppService.DefaultHostName;
-        ServerApplicationClientId = serverApplication.ApplicationId;
-        ServerDefaultHostName = serverAppService.DefaultHostName;
     }
 
     [Output]
@@ -265,7 +50,6 @@ class MyStack : Stack
 
     [Output]
     public Output<string> ExternalClientApplicationId { get; set; }
-
 
     [Output]
     public Output<string> ClientManagedIdentityClientId { get; set; }
