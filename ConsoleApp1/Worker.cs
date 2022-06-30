@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -26,7 +27,17 @@ namespace ConsoleApp1
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                var response = await _client.GetAsync();
+                IEnumerable<WeatherForecast> response;
+
+                try
+                {
+                    response = await _client.GetAsync();
+                }
+                catch (HttpRequestException e)
+                {
+                    _logger.LogError(e, "Got error making connection.");
+                    return;
+                }
 
                 _logger.LogInformation(JsonSerializer.Serialize(response));
 

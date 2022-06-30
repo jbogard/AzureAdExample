@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -19,11 +20,16 @@ namespace ConsoleApp1
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
+                .UseEnvironment(Environments.Development)
+                .ConfigureAppConfiguration((context, builder) =>
+                {
+                    builder.AddUserSecrets<Program>();
+                })
                 .ConfigureServices((context, services) =>
                 {
-                    var clientId = "18160796-6420-467c-8883-0f7419ed0ae6";
-                    var clientSecret = context.Configuration["clientSecret"];
-                    var tenantId = "e56b135d-b0e0-4ad8-8faa-1ca3915fe4b2";
+                    var clientId = context.Configuration["ClientId"];
+                    var clientSecret = context.Configuration["ClientSecret"];
+                    var tenantId = context.Configuration["TenantId"];
 
                     services.AddSingleton<IConfidentialClientApplication>(_ =>
                     {
@@ -37,12 +43,12 @@ namespace ConsoleApp1
 
                     services.AddTransient<AzureAdAuthHandler>();
                     services.AddHttpClient<IWeatherForecastClient, WeatherForecastClient>()
-                        .ConfigureHttpClient(client => client.BaseAddress = new Uri("https://localhost:5001"))
+                        .ConfigureHttpClient(client => client.BaseAddress = new Uri(context.Configuration["Server:BaseUrl"]))
                         .AddHttpMessageHandler(sp =>
                         {
                             var handler = sp.GetRequiredService<AzureAdAuthHandler>();
 
-                            handler.ServerApplicationId = "e04a370e-582c-4745-ad1e-cb30d36c3584";
+                            handler.ServerApplicationId = context.Configuration["Server:ApplicationId"];
 
                             return handler;
                         });
