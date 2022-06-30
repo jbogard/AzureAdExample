@@ -107,6 +107,7 @@ public class Server
         var visualStudio = new AzureAD.ApplicationPreAuthorized("azure-ad-example-server-preauth-visualstudio",
             new AzureAD.ApplicationPreAuthorizedArgs
             {
+                // This is the """well-known""" client ID for Visual Studio
                 AuthorizedAppId = "872cd9fa-d31f-45e0-9eab-6e460a02d1f1",
                 ApplicationObjectId = serverApplication.ObjectId,
                 PermissionIds =
@@ -117,6 +118,7 @@ public class Server
         var azureCli = new AzureAD.ApplicationPreAuthorized("azure-ad-example-server-preauth-azurecli",
             new AzureAD.ApplicationPreAuthorizedArgs
             {
+                // This is the """well-known""" client ID for Azure CLI
                 AuthorizedAppId = "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
                 ApplicationObjectId = serverApplication.ObjectId,
                 PermissionIds =
