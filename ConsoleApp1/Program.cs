@@ -9,7 +9,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 
-namespace ConsoleApp1
+namespace ExternalClient
 {
     class Program
     {

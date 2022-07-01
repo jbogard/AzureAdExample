@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.Resource;
 
-namespace WebApplication2.Controllers
+namespace AzureServer.Controllers
 {
     [Authorize]
     [ApiController]

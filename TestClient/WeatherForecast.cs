@@ -1,6 +1,6 @@
 using System;
 
-namespace TestClient
+namespace AzureClient
 {
     public class WeatherForecast
     {

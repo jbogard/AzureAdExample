@@ -33,7 +33,7 @@ public class Client
             HttpsOnly = true,
             SiteConfig = new AzureNative.Web.Inputs.SiteConfigArgs
             {
-                LinuxFxVersion = "DOTNETCORE|3.1",
+                LinuxFxVersion = "DOTNETCORE|6.0",
                 AppCommandLine = "dotnet AzureClient.dll",
                 AppSettings = new[]
                 {

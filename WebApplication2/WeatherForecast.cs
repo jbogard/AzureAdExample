@@ -1,6 +1,6 @@
 using System;
 
-namespace WebApplication2
+namespace AzureServer
 {
     public class WeatherForecast
     {

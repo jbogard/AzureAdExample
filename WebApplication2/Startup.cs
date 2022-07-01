@@ -16,7 +16,7 @@ using Microsoft.IdentityModel.Logging;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
-namespace WebApplication2
+namespace AzureServer
 {
     public class Startup
     {

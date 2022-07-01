@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Azure.Core;
 using Azure.Identity;
 
-namespace TestClient.Controllers
+namespace AzureClient.Controllers
 {
     [ApiController]
     [Route("[controller]")]

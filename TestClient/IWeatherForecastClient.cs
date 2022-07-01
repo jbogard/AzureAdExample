@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
-namespace TestClient
+namespace AzureClient
 {
     public interface IWeatherForecastClient
     {
