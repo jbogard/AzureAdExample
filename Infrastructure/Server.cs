@@ -24,8 +24,8 @@ public class Server
         });
 
         var localDevScopeUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-local-dev-scope-id");
-        var userReadRoleUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-user-read-role-id");
-        var userWriteRoleUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-user-read-write-id");
+        var todoReadRoleUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-todo-read-role-id");
+        var todoWriteRoleUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-todo-write-role-id");
         var serverApplication = new AzureAD.Application("azure-ad-example-server", new AzureAD.ApplicationArgs
         {
             DisplayName = "Azure AD Example Server",
@@ -59,11 +59,11 @@ public class Server
                         "User",
                         "Application"
                     },
-                    DisplayName = "User.Read",
+                    DisplayName = "Todo.Read",
                     Enabled = true,
-                    Value = "User.Read",
-                    Description = "User.Read",
-                    Id = userReadRoleUuid.Result
+                    Value = "Todo.Read",
+                    Description = "Todo.Read",
+                    Id = todoReadRoleUuid.Result
                 },
                 new AzureAD.Inputs.ApplicationAppRoleArgs
                 {
@@ -72,11 +72,11 @@ public class Server
                         "User",
                         "Application"
                     },
-                    DisplayName = "User.Write",
+                    DisplayName = "Todo.Write",
                     Enabled = true,
-                    Value = "User.Write",
-                    Description = "User.Write",
-                    Id = userWriteRoleUuid.Result
+                    Value = "Todo.Write",
+                    Description = "Todo.Write",
+                    Id = todoWriteRoleUuid.Result
                 }
             },
             SinglePageApplication = new AzureAD.Inputs.ApplicationSinglePageApplicationArgs
@@ -126,23 +126,30 @@ public class Server
                 }
             });
 
-        var devGroupServerUserReadAssignment = new AzureAD.AppRoleAssignment(
-            "azure-ad-example-localdev-server-user-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
+        var devGroupServerTodoReadAssignment = new AzureAD.AppRoleAssignment(
+            "azure-ad-example-localdev-server-todo-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
             {
-                AppRoleId = userReadRoleUuid.Result,
+                AppRoleId = todoReadRoleUuid.Result,
+                PrincipalObjectId = azureAdResources.LocalDevGroupObjectId,
+                ResourceObjectId = serverServicePrincipal.ObjectId
+            });
+        var devGroupServerTodoWriteAssignment = new AzureAD.AppRoleAssignment(
+            "azure-ad-example-localdev-server-todo-write-role-assignment", new AzureAD.AppRoleAssignmentArgs
+            {
+                AppRoleId = todoWriteRoleUuid.Result,
                 PrincipalObjectId = azureAdResources.LocalDevGroupObjectId,
                 ResourceObjectId = serverServicePrincipal.ObjectId
             });
 
-        UserReadRoleUuid = userReadRoleUuid.Result;
-        UserWriteRoleUuid = userWriteRoleUuid.Result;
+        TodoReadRoleUuid = todoReadRoleUuid.Result;
+        TodoWriteRoleUuid = todoWriteRoleUuid.Result;
         ServicePrincipalObjectId = serverServicePrincipal.ObjectId;
         AppServiceDefaultHostName = serverAppService.DefaultHostName;
         ApplicationApplicationId = serverApplication.ApplicationId;
     }
 
-    public Output<string> UserReadRoleUuid { get; set; }
-    public Output<string> UserWriteRoleUuid { get; set; }
+    public Output<string> TodoReadRoleUuid { get; set; }
+    public Output<string> TodoWriteRoleUuid { get; set; }
     public Output<string> ServicePrincipalObjectId { get; set; }
     public Output<string> ApplicationApplicationId { get; set; }
     public Output<string> AppServiceDefaultHostName { get; set; }

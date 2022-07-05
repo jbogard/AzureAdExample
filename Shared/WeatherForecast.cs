@@ -1,4 +1,4 @@
-namespace AzureServer;
+namespace Shared;
 
 public class WeatherForecast
 {

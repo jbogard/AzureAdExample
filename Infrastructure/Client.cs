@@ -15,10 +15,18 @@ public class Client
             ResourceGroupName = resourceGroup.Name
         });
 
-        var azureClientServerUserReadAssignment = new AzureAD.AppRoleAssignment(
-            "azure-ad-example-azure-client-server-user-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
+        var azureClientServerTodoReadAssignment = new AzureAD.AppRoleAssignment(
+            "azure-ad-example-azure-client-server-todo-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
             {
-                AppRoleId = server.UserReadRoleUuid,
+                AppRoleId = server.TodoReadRoleUuid,
+                PrincipalObjectId = clientUserAssignedIdentity.PrincipalId,
+                ResourceObjectId = server.ServicePrincipalObjectId
+            });
+
+        var azureClientServerTodoWriteAssignment = new AzureAD.AppRoleAssignment(
+            "azure-ad-example-azure-client-server-todo-write-role-assignment", new AzureAD.AppRoleAssignmentArgs
+            {
+                AppRoleId = server.TodoWriteRoleUuid,
                 PrincipalObjectId = clientUserAssignedIdentity.PrincipalId,
                 ResourceObjectId = server.ServicePrincipalObjectId
             });

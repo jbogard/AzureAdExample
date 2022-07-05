@@ -33,9 +33,9 @@ public class ExternalClient
                 ApplicationId = externalClientApplication.ApplicationId,
             });
         var externalClientServerUserReadAssignment = new AzureAD.AppRoleAssignment(
-            "azure-ad-example-external-client-server-user-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
+            "azure-ad-example-external-client-server-todo-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
             {
-                AppRoleId = server.UserReadRoleUuid,
+                AppRoleId = server.TodoReadRoleUuid,
                 PrincipalObjectId = externalClientServicePrincipal.ObjectId,
                 ResourceObjectId = server.ServicePrincipalObjectId
             });

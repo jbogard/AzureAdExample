@@ -1,20 +1,29 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Hosting;
+using AzureServer;
+using AzureServer.Models;
 
-namespace AzureServer
+var builder = WebApplication.CreateBuilder(args);
+
+var startup = new Startup(builder.Configuration);
+
+startup.ConfigureServices(builder.Services);
+
+var app = builder.Build();
+
+startup.Configure(app, builder.Environment);
+
+SeedDatabase();
+
+app.Run();
+
+void SeedDatabase()
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            CreateHostBuilder(args).Build().Run();
-        }
-
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
-                {
-                    webBuilder.UseStartup<Startup>();
-                });
-    }
+    using var scope = app.Services.CreateScope();
+    var db = scope.ServiceProvider.GetRequiredService<TodoContext>();
+    db.TodoItems.Add(new TodoItem {Name = "Todo item 1"});
+    db.TodoItems.Add(new TodoItem {Name = "Todo item 2"});
+    db.TodoItems.Add(new TodoItem {Name = "Todo item 3"});
+    db.TodoItems.Add(new TodoItem {Name = "Todo item 4"});
+    db.TodoItems.Add(new TodoItem {Name = "Todo item 5"});
+    db.SaveChanges();
 }
+
