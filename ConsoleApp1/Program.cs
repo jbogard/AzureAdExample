@@ -3,8 +3,8 @@ using Microsoft.Identity.Client;
 using Shared;
 
 var host = Host.CreateDefaultBuilder(args)
-    .UseEnvironment(Environments.Development)
-    .ConfigureAppConfiguration((context, builder) =>
+    .UseEnvironment(Environments.Production)
+    .ConfigureAppConfiguration((_, builder) =>
     {
         builder.AddUserSecrets<Program>();
     })
@@ -14,7 +14,7 @@ var host = Host.CreateDefaultBuilder(args)
         var clientSecret = context.Configuration["ClientSecret"];
         var tenantId = context.Configuration["TenantId"];
 
-        services.AddSingleton<IConfidentialClientApplication>(_ =>
+        services.AddSingleton(_ =>
         {
             var app = ConfidentialClientApplicationBuilder.Create(clientId)
                 .WithClientSecret(clientSecret)
