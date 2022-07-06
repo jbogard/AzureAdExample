@@ -29,10 +29,7 @@ public class Startup
         var options = new DefaultAzureCredentialOptions
         {
             ManagedIdentityClientId = managedIdentityClientId,
-            VisualStudioTenantId = tenantId,
-            InteractiveBrowserTenantId = tenantId,
-            ExcludeInteractiveBrowserCredential = false,
-            
+            VisualStudioTenantId = tenantId
         };
 
         services.AddSingleton<TokenCredential>(new DefaultAzureCredential(options));
