@@ -1,6 +1,8 @@
 using Pulumi;
 using AzureNative = Pulumi.AzureNative;
 
+namespace Infrastructure;
+
 class MyStack : Stack
 {
     public MyStack()

@@ -32,6 +32,7 @@ public class Startup
             VisualStudioTenantId = tenantId,
             InteractiveBrowserTenantId = tenantId,
             ExcludeInteractiveBrowserCredential = false,
+            
         };
 
         services.AddSingleton<TokenCredential>(new DefaultAzureCredential(options));

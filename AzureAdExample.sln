@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32602.215
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternalClient", "ConsoleApp1\ExternalClient.csproj", "{6241CD5A-B6CB-4366-90EE-236443686B5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExternalClient", "ExternalClient\ExternalClient.csproj", "{6241CD5A-B6CB-4366-90EE-236443686B5E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureServer", "WebApplication2\AzureServer.csproj", "{DB80E474-C134-468D-99D2-E0ACAE2A292B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureServer", "AzureServer\AzureServer.csproj", "{DB80E474-C134-468D-99D2-E0ACAE2A292B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureClient", "TestClient\AzureClient.csproj", "{F71F726B-6CCC-4DAA-A2C8-321CE3ED6D21}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureClient", "AzureClient\AzureClient.csproj", "{F71F726B-6CCC-4DAA-A2C8-321CE3ED6D21}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{2A0FBB92-2AFF-4D88-84F8-F51A383D654C}"
 EndProject
