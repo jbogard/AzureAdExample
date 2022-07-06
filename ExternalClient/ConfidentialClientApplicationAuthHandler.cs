@@ -3,12 +3,12 @@ using Microsoft.Identity.Client;
 
 namespace ExternalClient;
 
-public class AzureAdAuthHandler : DelegatingHandler
+public class ConfidentialClientApplicationAuthHandler : DelegatingHandler
 {
     private readonly IConfidentialClientApplication _app;
-    private readonly ILogger<AzureAdAuthHandler> _logger;
+    private readonly ILogger<ConfidentialClientApplicationAuthHandler> _logger;
 
-    public AzureAdAuthHandler(IConfidentialClientApplication app, ILogger<AzureAdAuthHandler> logger)
+    public ConfidentialClientApplicationAuthHandler(IConfidentialClientApplication app, ILogger<ConfidentialClientApplicationAuthHandler> logger)
     {
         _app = app;
         _logger = logger;

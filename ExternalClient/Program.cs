@@ -24,12 +24,12 @@ var host = Host.CreateDefaultBuilder(args)
             return app;
         });
 
-        services.AddTransient<AzureAdAuthHandler>();
+        services.AddTransient<ConfidentialClientApplicationAuthHandler>();
         services.AddHttpClient<IWeatherForecastClient, WeatherForecastClient>()
             .ConfigureHttpClient(client => client.BaseAddress = new Uri(context.Configuration["Server:BaseUrl"]))
             .AddHttpMessageHandler(sp =>
             {
-                var handler = sp.GetRequiredService<AzureAdAuthHandler>();
+                var handler = sp.GetRequiredService<ConfidentialClientApplicationAuthHandler>();
 
                 handler.ServerApplicationId = context.Configuration["Server:ApplicationId"];
 
@@ -39,7 +39,7 @@ var host = Host.CreateDefaultBuilder(args)
             .ConfigureHttpClient(client => client.BaseAddress = new Uri(context.Configuration["Server:BaseUrl"]))
             .AddHttpMessageHandler(sp =>
             {
-                var handler = sp.GetRequiredService<AzureAdAuthHandler>();
+                var handler = sp.GetRequiredService<ConfidentialClientApplicationAuthHandler>();
 
                 handler.ServerApplicationId = context.Configuration["Server:ApplicationId"];
 
