@@ -9,7 +9,7 @@ public class AzureIdentityAuthHandler<TClient> : DelegatingHandler
 {
     private readonly TokenCredential _credential;
     private readonly ILogger<AzureIdentityAuthHandler<TClient>> _logger;
-    private readonly IOptions<AzureAdServerApiOptions<TClient>> _options;
+    private readonly AzureAdServerApiOptions<TClient> _options;
 
     public AzureIdentityAuthHandler(TokenCredential credential, 
         ILogger<AzureIdentityAuthHandler<TClient>> logger,
@@ -17,13 +17,13 @@ public class AzureIdentityAuthHandler<TClient> : DelegatingHandler
     {
         _credential = credential;
         _logger = logger;
-        _options = options;
+        _options = options.Value;
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, 
         CancellationToken cancellationToken)
     {
-        var scopes = new[] { _options.Value.ApplicationId + "/.default" };
+        var scopes = new[] { _options.ApplicationId + "/.default" };
         var tokenRequestContext = new TokenRequestContext(scopes);
         var result = await _credential.GetTokenAsync(tokenRequestContext, cancellationToken);
 

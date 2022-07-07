@@ -1,24 +1,28 @@
 ﻿using System.Net.Http.Headers;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
+using Shared;
 
 namespace ExternalClient;
 
-public class ConfidentialClientApplicationAuthHandler : DelegatingHandler
+public class ConfidentialClientApplicationAuthHandler<TClient> : DelegatingHandler
 {
     private readonly IConfidentialClientApplication _app;
-    private readonly ILogger<ConfidentialClientApplicationAuthHandler> _logger;
+    private readonly ILogger<ConfidentialClientApplicationAuthHandler<TClient>> _logger;
+    private readonly AzureAdServerApiOptions<TClient> _options;
 
-    public ConfidentialClientApplicationAuthHandler(IConfidentialClientApplication app, ILogger<ConfidentialClientApplicationAuthHandler> logger)
+    public ConfidentialClientApplicationAuthHandler(IConfidentialClientApplication app, 
+        ILogger<ConfidentialClientApplicationAuthHandler<TClient>> logger,
+        IOptions<AzureAdServerApiOptions<TClient>> options)
     {
         _app = app;
         _logger = logger;
+        _options = options.Value;
     }
-
-    public string ServerApplicationId { get; set; } = null!;
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var scopes = new[] { ServerApplicationId + "/.default" };
+        var scopes = new[] { _options.ApplicationId + "/.default" };
         var result = await _app.AcquireTokenForClient(scopes)
             .ExecuteAsync(cancellationToken);
 
