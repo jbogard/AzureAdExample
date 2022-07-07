@@ -47,7 +47,7 @@ public class Client
                 {
                     new AzureNative.Web.Inputs.NameValuePairArgs
                     {
-                        Name = "Server__BaseUrl",
+                        Name = "Server__BaseAddress",
                         Value = Output.Format($"https://{server.AppServiceDefaultHostName}")
                     }
                 }

@@ -1,5 +1,6 @@
 using Azure.Core;
 using Azure.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using Shared;
 
@@ -25,7 +26,8 @@ public class Startup
 
         var managedIdentityClientId = Configuration["ClientId"];
         var tenantId = Configuration["TenantId"];
-        var applicationId = Configuration["Server:ApplicationId"];
+        services.Configure<AzureAdServerApiOptions<ITodoItemsClient>>(Configuration.GetSection("Server"));
+        services.Configure<AzureAdServerApiOptions<IWeatherForecastClient>>(Configuration.GetSection("Server"));
         var options = new DefaultAzureCredentialOptions
         {
             ManagedIdentityClientId = managedIdentityClientId,
@@ -33,27 +35,21 @@ public class Startup
         };
 
         services.AddSingleton<TokenCredential>(new DefaultAzureCredential(options));
-        services.AddTransient<AzureIdentityAuthHandler>();
+        services.AddTransient(typeof(AzureIdentityAuthHandler<>));
         services.AddHttpClient<IWeatherForecastClient, WeatherForecastClient>()
-            .ConfigureHttpClient(client => client.BaseAddress = new Uri(Configuration["Server:BaseUrl"]))
-            .AddHttpMessageHandler(sp =>
+            .ConfigureHttpClient((sp, client) =>
             {
-                var handler = sp.GetRequiredService<AzureIdentityAuthHandler>();
-
-                handler.ServerApplicationId = applicationId;
-
-                return handler;
-            });
+                var serverOptions = sp.GetRequiredService<IOptions<AzureAdServerApiOptions<IWeatherForecastClient>>>();
+                client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
+            })
+            .AddHttpMessageHandler<AzureIdentityAuthHandler<IWeatherForecastClient>>();
         services.AddHttpClient<ITodoItemsClient, TodoItemsClient>()
-            .ConfigureHttpClient(client => client.BaseAddress = new Uri(Configuration["Server:BaseUrl"]))
-            .AddHttpMessageHandler(sp =>
+            .ConfigureHttpClient((sp, client) =>
             {
-                var handler = sp.GetRequiredService<AzureIdentityAuthHandler>();
-
-                handler.ServerApplicationId = applicationId;
-
-                return handler;
-            });
+                var serverOptions = sp.GetRequiredService<IOptions<AzureAdServerApiOptions<ITodoItemsClient>>>();
+                client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
+            })
+            .AddHttpMessageHandler<AzureIdentityAuthHandler<ITodoItemsClient>>();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

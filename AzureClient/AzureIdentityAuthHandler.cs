@@ -1,26 +1,29 @@
 using System.Net.Http.Headers;
 using Azure.Core;
+using Microsoft.Extensions.Options;
+using Shared;
 
 namespace AzureClient;
 
-public class AzureIdentityAuthHandler : DelegatingHandler
+public class AzureIdentityAuthHandler<TClient> : DelegatingHandler
 {
     private readonly TokenCredential _credential;
-    private readonly ILogger<AzureIdentityAuthHandler> _logger;
+    private readonly ILogger<AzureIdentityAuthHandler<TClient>> _logger;
+    private readonly IOptions<AzureAdServerApiOptions<TClient>> _options;
 
     public AzureIdentityAuthHandler(TokenCredential credential, 
-        ILogger<AzureIdentityAuthHandler> logger)
+        ILogger<AzureIdentityAuthHandler<TClient>> logger,
+        IOptions<AzureAdServerApiOptions<TClient>> options)
     {
         _credential = credential;
         _logger = logger;
+        _options = options;
     }
-
-    public string ServerApplicationId { get; set; } = null!;
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, 
         CancellationToken cancellationToken)
     {
-        var scopes = new[] { ServerApplicationId + "/.default" };
+        var scopes = new[] { _options.Value.ApplicationId + "/.default" };
         var tokenRequestContext = new TokenRequestContext(scopes);
         var result = await _credential.GetTokenAsync(tokenRequestContext, cancellationToken);
 
