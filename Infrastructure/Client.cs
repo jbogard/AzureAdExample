@@ -5,33 +5,21 @@ using AzureNative = Pulumi.AzureNative;
 
 public class Client
 {
+    public const string AppName = "azure-client";
+
     public Client(
+        string prefix,
         AzureNative.Resources.ResourceGroup resourceGroup,
         AzureNative.Web.AppServicePlan appServicePlan,
         Server server)
     {
-        var clientUserAssignedIdentity = new AzureNative.ManagedIdentity.UserAssignedIdentity("azure-ad-example-azure-client-user", new AzureNative.ManagedIdentity.UserAssignedIdentityArgs
-        {
-            ResourceGroupName = resourceGroup.Name
-        });
-
-        var azureClientServerTodoReadAssignment = new AzureAD.AppRoleAssignment(
-            "azure-ad-example-azure-client-server-todo-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
+        var userAssignedIdentity = new AzureNative.ManagedIdentity.UserAssignedIdentity($"{prefix}-{AppName}-user",
+            new AzureNative.ManagedIdentity.UserAssignedIdentityArgs
             {
-                AppRoleId = server.TodoReadRoleUuid,
-                PrincipalObjectId = clientUserAssignedIdentity.PrincipalId,
-                ResourceObjectId = server.ServicePrincipalObjectId
+                ResourceGroupName = resourceGroup.Name
             });
 
-        var azureClientServerTodoWriteAssignment = new AzureAD.AppRoleAssignment(
-            "azure-ad-example-azure-client-server-todo-write-role-assignment", new AzureAD.AppRoleAssignmentArgs
-            {
-                AppRoleId = server.TodoWriteRoleUuid,
-                PrincipalObjectId = clientUserAssignedIdentity.PrincipalId,
-                ResourceObjectId = server.ServicePrincipalObjectId
-            });
-
-        var clientAppService = new AzureNative.Web.WebApp("azure-ad-example-azure-client", new AzureNative.Web.WebAppArgs
+        var webApp = new AzureNative.Web.WebApp($"{prefix}-{AppName}", new AzureNative.Web.WebAppArgs
         {
             Kind = "app,linux",
             Location = resourceGroup.Location,
@@ -55,7 +43,7 @@ public class Client
             Identity = new AzureNative.Web.Inputs.ManagedServiceIdentityArgs
             {
                 Type = AzureNative.Web.ManagedServiceIdentityType.UserAssigned,
-                UserAssignedIdentities = clientUserAssignedIdentity.Id.Apply(id =>
+                UserAssignedIdentities = userAssignedIdentity.Id.Apply(id =>
                 {
                     var im = new Dictionary<string, object>
                     {
@@ -66,10 +54,12 @@ public class Client
             }
         });
 
-        UserAssignedIdentityClientId = clientUserAssignedIdentity.ClientId;
-        AppServiceDefaultHostName = clientAppService.DefaultHostName;
+        UserAssignedIdentityClientId = userAssignedIdentity.ClientId;
+        UserAssignedIdentityPrincipalId = userAssignedIdentity.PrincipalId;
+        AppServiceDefaultHostName = webApp.DefaultHostName;
     }
 
     public Output<string> UserAssignedIdentityClientId { get; set; }
+    public Output<string> UserAssignedIdentityPrincipalId { get; set; }
     public Output<string> AppServiceDefaultHostName { get; set; }
 }

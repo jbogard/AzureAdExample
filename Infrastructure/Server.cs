@@ -4,11 +4,15 @@ using AzureNative = Pulumi.AzureNative;
 
 public class Server
 {
-    public Server(AzureNative.Resources.ResourceGroup resourceGroup,
-       AzureNative.Web.AppServicePlan appServicePlan, 
-       AzureAdResources azureAdResources)
+    public const string AppName = "server";
+
+    public Server(
+        string prefix,
+        AzureNative.Resources.ResourceGroup resourceGroup,
+        AzureNative.Web.AppServicePlan appServicePlan,
+        AzureAdResources azureAdResources)
     {
-        var serverAppService = new AzureNative.Web.WebApp("azure-ad-example-server", new AzureNative.Web.WebAppArgs
+        var serverAppService = new AzureNative.Web.WebApp($"{prefix}-{AppName}", new AzureNative.Web.WebAppArgs
         {
             Kind = "app,linux",
             Location = resourceGroup.Location,
@@ -23,15 +27,15 @@ public class Server
             },
         });
 
-        var localDevScopeUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-local-dev-scope-id");
-        var todoReadRoleUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-todo-read-role-id");
-        var todoWriteRoleUuid = new Pulumi.Random.RandomUuid("azure-ad-example-server-todo-write-role-id");
-        var serverApplication = new AzureAD.Application("azure-ad-example-server", new AzureAD.ApplicationArgs
+        var localDevScopeUuid = new Pulumi.Random.RandomUuid($"{prefix}-{AppName}-local-dev-scope-id");
+        var todoReadRoleUuid = new Pulumi.Random.RandomUuid($"{prefix}-{AppName}-todo-read-role-id");
+        var todoWriteRoleUuid = new Pulumi.Random.RandomUuid($"{prefix}-{AppName}-todo-write-role-id");
+        var serverApplication = new AzureAD.Application($"{prefix}-{AppName}", new AzureAD.ApplicationArgs
         {
             DisplayName = "Azure AD Example Server",
             IdentifierUris =
             {
-                "api://azure-ad-example-server"
+                $"api://{prefix}-{AppName}"
             },
             Api = new AzureAD.Inputs.ApplicationApiArgs
             {
@@ -97,13 +101,13 @@ public class Server
             }
         });
 
-        var serverServicePrincipal = new AzureAD.ServicePrincipal("azure-ad-example-server-service-principal",
+        var serverServicePrincipal = new AzureAD.ServicePrincipal($"{prefix}-{AppName}-service-principal",
             new AzureAD.ServicePrincipalArgs
             {
                 ApplicationId = serverApplication.ApplicationId,
             });
 
-        var visualStudio = new AzureAD.ApplicationPreAuthorized("azure-ad-example-server-preauth-visualstudio",
+        var visualStudio = new AzureAD.ApplicationPreAuthorized($"{prefix}-{AppName}-preauth-visualstudio",
             new AzureAD.ApplicationPreAuthorizedArgs
             {
                 // This is the """well-known""" client ID for Visual Studio
@@ -114,7 +118,7 @@ public class Server
                     localDevScopeUuid.Result
                 }
             });
-        var azureCli = new AzureAD.ApplicationPreAuthorized("azure-ad-example-server-preauth-azurecli",
+        var azureCli = new AzureAD.ApplicationPreAuthorized($"{prefix}-{AppName}-preauth-azurecli",
             new AzureAD.ApplicationPreAuthorizedArgs
             {
                 // This is the """well-known""" client ID for Azure CLI
@@ -124,21 +128,6 @@ public class Server
                 {
                     localDevScopeUuid.Result
                 }
-            });
-
-        var devGroupServerTodoReadAssignment = new AzureAD.AppRoleAssignment(
-            "azure-ad-example-localdev-server-todo-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
-            {
-                AppRoleId = todoReadRoleUuid.Result,
-                PrincipalObjectId = azureAdResources.LocalDevGroupObjectId,
-                ResourceObjectId = serverServicePrincipal.ObjectId
-            });
-        var devGroupServerTodoWriteAssignment = new AzureAD.AppRoleAssignment(
-            "azure-ad-example-localdev-server-todo-write-role-assignment", new AzureAD.AppRoleAssignmentArgs
-            {
-                AppRoleId = todoWriteRoleUuid.Result,
-                PrincipalObjectId = azureAdResources.LocalDevGroupObjectId,
-                ResourceObjectId = serverServicePrincipal.ObjectId
             });
 
         TodoReadRoleUuid = todoReadRoleUuid.Result;
@@ -153,4 +142,45 @@ public class Server
     public Output<string> ServicePrincipalObjectId { get; set; }
     public Output<string> ApplicationApplicationId { get; set; }
     public Output<string> AppServiceDefaultHostName { get; set; }
+
+    public void AssignRoles(string prefix, AzureAdResources azureAdResources)
+    {
+        AssignRead(prefix, AzureAdResources.LocalDevGroupName, azureAdResources.LocalDevGroupObjectId);
+        AssignWrite(prefix, AzureAdResources.LocalDevGroupName, azureAdResources.LocalDevGroupObjectId);
+    }
+
+    public void AssignRoles(string prefix, Client client)
+    {
+        AssignRead(prefix, Client.AppName, client.UserAssignedIdentityPrincipalId);
+        AssignWrite(prefix, Client.AppName, client.UserAssignedIdentityPrincipalId);
+    }
+
+    public void AssignRoles(string prefix, ExternalClient externalClient)
+    {
+        AssignRead(prefix, ExternalClient.AppName, externalClient.ApplicationServicePrincipalObjectId);
+    }
+
+    private AzureAD.AppRoleAssignment AssignRead(string prefix, string assigneeName, Output<string> principalObjectId)
+    {
+        return new AzureAD.AppRoleAssignment(
+            $"{prefix}-{assigneeName}-{AppName}-todo-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
+            {
+                AppRoleId = TodoReadRoleUuid,
+                PrincipalObjectId = principalObjectId,
+                ResourceObjectId = ServicePrincipalObjectId
+            });
+    }
+
+    private AzureAD.AppRoleAssignment AssignWrite(string prefix, string assigneeName, Output<string> principalObjectId)
+    {
+        return new AzureAD.AppRoleAssignment(
+            $"{prefix}-{assigneeName}-{AppName}-todo-write-role-assignment", new AzureAD.AppRoleAssignmentArgs
+            {
+                AppRoleId = TodoWriteRoleUuid,
+                PrincipalObjectId = principalObjectId,
+                ResourceObjectId = ServicePrincipalObjectId
+            });
+    }
+
+
 }

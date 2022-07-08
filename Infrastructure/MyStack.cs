@@ -7,17 +7,23 @@ class MyStack : Stack
 {
     public MyStack()
     {
-        var resourceGroup = new AzureNative.Resources.ResourceGroup("azure-ad-example");
+        const string prefix = "azure-ad-example";
 
-        var appServicePlan = CreateAppServicePlan(resourceGroup);
+        var resourceGroup = new AzureNative.Resources.ResourceGroup(prefix);
 
-        var azureAdResources = new AzureAdResources();
+        var appServicePlan = CreateAppServicePlan(prefix, resourceGroup);
 
-        var server = new Server(resourceGroup, appServicePlan, azureAdResources);
+        var azureAdResources = new AzureAdResources(prefix);
 
-        var client = new Client(resourceGroup, appServicePlan, server);
+        var server = new Server(prefix, resourceGroup, appServicePlan, azureAdResources);
 
-        var externalClient = new ExternalClient(server);
+        var client = new Client(prefix, resourceGroup, appServicePlan, server);
+
+        var externalClient = new ExternalClient(prefix, server);
+
+        server.AssignRoles(prefix, azureAdResources);
+        server.AssignRoles(prefix, client);
+        server.AssignRoles(prefix, externalClient);
 
         ExternalClientSecret = externalClient.ApplicationSecretValue;
         ExternalClientApplicationId = externalClient.ApplicationApplicationId;
@@ -27,9 +33,10 @@ class MyStack : Stack
         ServerDefaultHostName = server.AppServiceDefaultHostName;
     }
 
-    private static AzureNative.Web.AppServicePlan CreateAppServicePlan(AzureNative.Resources.ResourceGroup resourceGroup)
+    private static AzureNative.Web.AppServicePlan CreateAppServicePlan(string prefix, 
+        AzureNative.Resources.ResourceGroup resourceGroup)
     {
-        return new AzureNative.Web.AppServicePlan("azure-ad-example-app-service-plan",
+        return new AzureNative.Web.AppServicePlan($"{prefix}-app-service-plan",
             new AzureNative.Web.AppServicePlanArgs
             {
                 Kind = "linux",

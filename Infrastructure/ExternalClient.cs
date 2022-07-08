@@ -3,9 +3,11 @@ using AzureAD = Pulumi.AzureAD;
 
 public class ExternalClient
 {
-    public ExternalClient(Server server)
+    public const string AppName = "external-client";
+
+    public ExternalClient(string prefix, Server server)
     {
-        var externalClientApplication = new AzureAD.Application("azure-ad-example-external-client", new AzureAD.ApplicationArgs
+        var application = new AzureAD.Application($"{prefix}-{AppName}", new AzureAD.ApplicationArgs
         {
             DisplayName = "Azure AD Example External Client",
             Api = new AzureAD.Inputs.ApplicationApiArgs
@@ -14,11 +16,11 @@ public class ExternalClient
             }
         });
 
-        var externalClientApplicationSecret = new AzureAD.ApplicationPassword(
-            "azure-ad-example-external-client-password",
+        var applicationSecret = new AzureAD.ApplicationPassword(
+            $"{prefix}-{AppName}-password",
             new AzureAD.ApplicationPasswordArgs
             {
-                ApplicationObjectId = externalClientApplication.ObjectId
+                ApplicationObjectId = application.ObjectId
             }, new CustomResourceOptions
             {
                 AdditionalSecretOutputs =
@@ -27,23 +29,18 @@ public class ExternalClient
                 }
             });
 
-        var externalClientServicePrincipal = new AzureAD.ServicePrincipal("azure-ad-example-external-client-service-principal",
+        var servicePrincipal = new AzureAD.ServicePrincipal($"{prefix}-{AppName}-service-principal",
             new AzureAD.ServicePrincipalArgs
             {
-                ApplicationId = externalClientApplication.ApplicationId,
-            });
-        var externalClientServerUserReadAssignment = new AzureAD.AppRoleAssignment(
-            "azure-ad-example-external-client-server-todo-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
-            {
-                AppRoleId = server.TodoReadRoleUuid,
-                PrincipalObjectId = externalClientServicePrincipal.ObjectId,
-                ResourceObjectId = server.ServicePrincipalObjectId
+                ApplicationId = application.ApplicationId,
             });
 
-        ApplicationSecretValue = externalClientApplicationSecret.Value;
-        ApplicationApplicationId = externalClientApplication.ApplicationId;
+        ApplicationSecretValue = applicationSecret.Value;
+        ApplicationApplicationId = application.ApplicationId;
+        ApplicationServicePrincipalObjectId = servicePrincipal.ObjectId;
     }
 
     public Output<string> ApplicationSecretValue { get; set; }
     public Output<string> ApplicationApplicationId { get; set; }
+    public Output<string> ApplicationServicePrincipalObjectId { get; set; }
 }

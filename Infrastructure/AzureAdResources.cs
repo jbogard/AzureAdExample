@@ -3,7 +3,9 @@ using AzureAD = Pulumi.AzureAD;
 
 public class AzureAdResources
 {
-    public AzureAdResources()
+    public const string LocalDevGroupName = "localdev";
+
+    public AzureAdResources(string prefix)
     {
         var config = new Config();
 
@@ -13,12 +15,12 @@ public class AzureAdResources
         {
             UserPrincipalName = jimmyUpn
         }));
-        var devGroup = new AzureAD.Group("azure-ad-example-localdev", new AzureAD.GroupArgs
+        var devGroup = new AzureAD.Group($"{prefix}-{LocalDevGroupName}", new AzureAD.GroupArgs
         {
             DisplayName = "Azure AD Example Local Dev",
             SecurityEnabled = true
         });
-        var jimmyDevGroupMember = new AzureAD.GroupMember("azure-ad-example-jimmy-localdev-member",
+        var jimmyDevGroupMember = new AzureAD.GroupMember($"{prefix}-jimmy-{LocalDevGroupName}-member",
             new AzureAD.GroupMemberArgs
             {
                 GroupObjectId = devGroup.ObjectId,
