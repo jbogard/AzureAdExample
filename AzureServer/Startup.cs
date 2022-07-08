@@ -22,10 +22,7 @@ public class Startup
     {
         JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
-        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddMicrosoftIdentityWebApi(Configuration);
-
-        var tenantId = Configuration["AzureAd:TenantId"];
+        services.AddMicrosoftIdentityWebApiAuthentication(Configuration);
 
         services.AddControllers();
 
@@ -38,7 +35,7 @@ public class Startup
 
             options.OperationFilter<SwaggerAuthorizeOperationFilter>();
 
-            // This does work if your user has the roles assigned
+            var tenantId = Configuration["AzureAd:TenantId"];
             options.AddSecurityDefinition("OAuth Auth Code", new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.OAuth2,
@@ -72,8 +69,7 @@ public class Startup
         app.UseSwaggerUI(options =>
         {
             options.SwaggerEndpoint("/swagger/v1/swagger.json", "Server v1");
-            var serverApplicationId = Configuration["AzureAd:ClientId"];
-            options.OAuthClientId(serverApplicationId);
+            options.OAuthClientId(Configuration["AzureAd:ClientId"]);
             options.OAuthScopeSeparator(" ");
             options.OAuthUsePkce();
         });

@@ -26,8 +26,6 @@ public class Startup
 
         var managedIdentityClientId = Configuration["ClientId"];
         var tenantId = Configuration["TenantId"];
-        services.Configure<AzureAdServerApiOptions<ITodoItemsClient>>(Configuration.GetSection("Server"));
-        services.Configure<AzureAdServerApiOptions<IWeatherForecastClient>>(Configuration.GetSection("Server"));
         var options = new DefaultAzureCredentialOptions
         {
             ManagedIdentityClientId = managedIdentityClientId,
@@ -35,7 +33,12 @@ public class Startup
         };
 
         services.AddSingleton<TokenCredential>(new DefaultAzureCredential(options));
+
         services.AddTransient(typeof(AzureIdentityAuthHandler<>));
+
+        var serverConfigSection = Configuration.GetSection("Server");
+
+        services.Configure<AzureAdServerApiOptions<IWeatherForecastClient>>(serverConfigSection);
         services.AddHttpClient<IWeatherForecastClient, WeatherForecastClient>()
             .ConfigureHttpClient((sp, client) =>
             {
@@ -43,6 +46,8 @@ public class Startup
                 client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
             })
             .AddHttpMessageHandler<AzureIdentityAuthHandler<IWeatherForecastClient>>();
+
+        services.Configure<AzureAdServerApiOptions<ITodoItemsClient>>(serverConfigSection);
         services.AddHttpClient<ITodoItemsClient, TodoItemsClient>()
             .ConfigureHttpClient((sp, client) =>
             {
