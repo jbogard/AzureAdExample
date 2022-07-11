@@ -9,8 +9,7 @@ public class Server
     public Server(
         string prefix,
         AzureNative.Resources.ResourceGroup resourceGroup,
-        AzureNative.Web.AppServicePlan appServicePlan,
-        AzureAdResources azureAdResources)
+        AzureNative.Web.AppServicePlan appServicePlan)
     {
         var serverAppService = new AzureNative.Web.WebApp($"{prefix}-{AppName}", new AzureNative.Web.WebAppArgs
         {

@@ -15,7 +15,7 @@ class MyStack : Stack
 
         var azureAdResources = new AzureAdResources(prefix);
 
-        var server = new Server(prefix, resourceGroup, appServicePlan, azureAdResources);
+        var server = new Server(prefix, resourceGroup, appServicePlan);
 
         var client = new Client(prefix, resourceGroup, appServicePlan, server);
 
