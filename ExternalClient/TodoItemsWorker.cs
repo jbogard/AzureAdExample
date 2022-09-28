@@ -6,25 +6,27 @@ namespace ExternalClient;
 public class TodoItemsWorker : BackgroundService
 {
     private readonly ILogger<TodoItemsWorker> _logger;
-    private readonly ITodoItemsClient _client;
+    private readonly IServiceProvider _serviceProvider;
 
-    public TodoItemsWorker(ILogger<TodoItemsWorker> logger, ITodoItemsClient client)
+    public TodoItemsWorker(ILogger<TodoItemsWorker> logger, IServiceProvider serviceProvider)
     {
         _logger = logger;
-        _client = client;
+        _serviceProvider = serviceProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+            using var scope = _serviceProvider.CreateScope();
+            var client = scope.ServiceProvider.GetRequiredService<ITodoItemsClient>();
             try
             {
-                var response = await _client.GetAsync(1);
+                var response = await client.GetAsync(1);
 
                 if (response != null)
                 {
-                    await _client.PutAsync(response.Id, response);
+                    await client.PutAsync(response.Id, response);
 
                     _logger.LogInformation(JsonSerializer.Serialize(response));
                 }

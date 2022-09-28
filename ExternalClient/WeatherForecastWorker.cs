@@ -6,25 +6,27 @@ namespace ExternalClient;
 public class WeatherForecastWorker : BackgroundService
 {
     private readonly ILogger<WeatherForecastWorker> _logger;
-    private readonly IWeatherForecastClient _client;
+    private readonly IServiceProvider _serviceProvider;
 
     public WeatherForecastWorker(
         ILogger<WeatherForecastWorker> logger, 
-        IWeatherForecastClient client)
+        IServiceProvider serviceProvider)
     {
         _logger = logger;
-        _client = client;
+        _serviceProvider = serviceProvider;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+            using var scope = _serviceProvider.CreateScope();
+            var client = scope.ServiceProvider.GetRequiredService<IWeatherForecastClient>();
             IEnumerable<WeatherForecast>? response;
 
             try
             {
-                response = await _client.GetAsync();
+                response = await client.GetAsync();
             }
             catch (HttpRequestException e)
             {
