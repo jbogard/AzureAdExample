@@ -111,17 +111,6 @@ public class Server
                         localDevScopeUuid.Result
                     }
                 });
-        //var azureCli = new AzureAD.ApplicationPreAuthorized($"{prefix}-{AppName}-preauth-azurecli",
-        //    new AzureAD.ApplicationPreAuthorizedArgs
-        //    {
-        //        // This is the """well-known""" client ID for Azure CLI
-        //        AuthorizedAppId = "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
-        //        ApplicationObjectId = serverApplication.ObjectId,
-        //        PermissionIds =
-        //        {
-        //            localDevScopeUuid.Result
-        //        }
-        //    });
 
         TodoReadRoleUuid = todoReadRoleUuid.Result;
         TodoWriteRoleUuid = todoWriteRoleUuid.Result;
