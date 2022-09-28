@@ -19,7 +19,7 @@ class MyStack : Stack
 
         var client = new Client(prefix, resourceGroup, appServicePlan, server);
 
-        var externalClient = new ExternalClient(prefix, server);
+        var externalClient = new ExternalClient(prefix);
 
         server.AssignRoles(prefix, azureAdResources);
         server.AssignRoles(prefix, client);

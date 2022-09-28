@@ -8,7 +8,9 @@ public class WeatherForecastWorker : BackgroundService
     private readonly ILogger<WeatherForecastWorker> _logger;
     private readonly IWeatherForecastClient _client;
 
-    public WeatherForecastWorker(ILogger<WeatherForecastWorker> logger, IWeatherForecastClient client)
+    public WeatherForecastWorker(
+        ILogger<WeatherForecastWorker> logger, 
+        IWeatherForecastClient client)
     {
         _logger = logger;
         _client = client;

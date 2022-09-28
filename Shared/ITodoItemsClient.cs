@@ -22,7 +22,9 @@ public class TodoItemsClient : ITodoItemsClient
 
     public async Task<IEnumerable<TodoItem>?> GetAsync()
     {
-        return await _client.GetFromJsonAsync<IEnumerable<TodoItem>>("/api/todoitems");
+        return await _client.GetFromJsonAsync<IEnumerable<TodoItem>>(
+            "/api/todoitems"
+            );
     }
 
     public async Task<TodoItem?> GetAsync(long id)

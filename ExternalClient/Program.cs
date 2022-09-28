@@ -25,26 +25,34 @@ var host = Host.CreateDefaultBuilder(args)
             return app;
         });
 
-        services.Configure<AzureAdServerApiOptions<ITodoItemsClient>>(context.Configuration.GetSection("Server"));
-        services.Configure<AzureAdServerApiOptions<IWeatherForecastClient>>(context.Configuration.GetSection("Server"));
+        services.Configure<AzureAdServerApiOptions<ITodoItemsClient>>(
+            context.Configuration.GetSection("Server"));
+        services.Configure<AzureAdServerApiOptions<IWeatherForecastClient>>(
+            context.Configuration.GetSection("Server"));
 
-        services.AddTransient<ConfidentialClientApplicationAuthHandler<IWeatherForecastClient>>();
-        services.AddTransient<ConfidentialClientApplicationAuthHandler<ITodoItemsClient>>();
+        services.AddTransient<
+            ConfidentialClientApplicationAuthHandler<IWeatherForecastClient>>();
+        services.AddTransient<
+            ConfidentialClientApplicationAuthHandler<ITodoItemsClient>>();
 
         services.AddHttpClient<IWeatherForecastClient, WeatherForecastClient>()
             .ConfigureHttpClient((sp, client) =>
             {
-                var serverOptions = sp.GetRequiredService<IOptions<AzureAdServerApiOptions<IWeatherForecastClient>>>();
+                var serverOptions = sp.GetRequiredService<
+                    IOptions<AzureAdServerApiOptions<IWeatherForecastClient>>>();
                 client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
             })
-            .AddHttpMessageHandler<ConfidentialClientApplicationAuthHandler<IWeatherForecastClient>>();
+            .AddHttpMessageHandler<
+                ConfidentialClientApplicationAuthHandler<IWeatherForecastClient>>();
         services.AddHttpClient<ITodoItemsClient, TodoItemsClient>()
             .ConfigureHttpClient((sp, client) =>
             {
-                var serverOptions = sp.GetRequiredService<IOptions<AzureAdServerApiOptions<ITodoItemsClient>>>();
+                var serverOptions = sp.GetRequiredService<
+                    IOptions<AzureAdServerApiOptions<ITodoItemsClient>>>();
                 client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
             })
-            .AddHttpMessageHandler<ConfidentialClientApplicationAuthHandler<IWeatherForecastClient>>();
+            .AddHttpMessageHandler<
+                ConfidentialClientApplicationAuthHandler<IWeatherForecastClient>>();
         services.AddHostedService<WeatherForecastWorker>();
         services.AddHostedService<TodoItemsWorker>();
     })

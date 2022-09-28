@@ -38,7 +38,6 @@ public class Server
             },
             Api = new AzureAD.Inputs.ApplicationApiArgs
             {
-                MappedClaimsEnabled = true,
                 RequestedAccessTokenVersion = 2,
                 Oauth2PermissionScopes =
                 {
@@ -89,45 +88,40 @@ public class Server
                     Output.Format($"https://{serverAppService.DefaultHostName}/swagger/oauth2-redirect.html"),
                     "https://localhost:5001/swagger/oauth2-redirect.html"
                 }
-            },
-            Web = new AzureAD.Inputs.ApplicationWebArgs
-            {
-                ImplicitGrant = new AzureAD.Inputs.ApplicationWebImplicitGrantArgs
-                {
-                    AccessTokenIssuanceEnabled = true,
-                    IdTokenIssuanceEnabled = true
-                }
             }
         });
 
-        var serverServicePrincipal = new AzureAD.ServicePrincipal($"{prefix}-{AppName}-service-principal",
-            new AzureAD.ServicePrincipalArgs
-            {
-                ApplicationId = serverApplication.ApplicationId,
-            });
+        var serverServicePrincipal =
+            new AzureAD.ServicePrincipal($"{prefix}-{AppName}-service-principal",
+                new AzureAD.ServicePrincipalArgs
+                {
+                    ApplicationId = serverApplication.ApplicationId,
+                });
 
-        var visualStudio = new AzureAD.ApplicationPreAuthorized($"{prefix}-{AppName}-preauth-visualstudio",
-            new AzureAD.ApplicationPreAuthorizedArgs
-            {
-                // This is the """well-known""" client ID for Visual Studio
-                AuthorizedAppId = "872cd9fa-d31f-45e0-9eab-6e460a02d1f1",
-                ApplicationObjectId = serverApplication.ObjectId,
-                PermissionIds =
+        var visualStudio =
+            new AzureAD.ApplicationPreAuthorized(
+                $"{prefix}-{AppName}-preauth-visualstudio",
+                new AzureAD.ApplicationPreAuthorizedArgs
                 {
-                    localDevScopeUuid.Result
-                }
-            });
-        var azureCli = new AzureAD.ApplicationPreAuthorized($"{prefix}-{AppName}-preauth-azurecli",
-            new AzureAD.ApplicationPreAuthorizedArgs
-            {
-                // This is the """well-known""" client ID for Azure CLI
-                AuthorizedAppId = "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
-                ApplicationObjectId = serverApplication.ObjectId,
-                PermissionIds =
-                {
-                    localDevScopeUuid.Result
-                }
-            });
+                    // This is the """well-known""" client ID for Visual Studio
+                    AuthorizedAppId = "872cd9fa-d31f-45e0-9eab-6e460a02d1f1",
+                    ApplicationObjectId = serverApplication.ObjectId,
+                    PermissionIds =
+                    {
+                        localDevScopeUuid.Result
+                    }
+                });
+        //var azureCli = new AzureAD.ApplicationPreAuthorized($"{prefix}-{AppName}-preauth-azurecli",
+        //    new AzureAD.ApplicationPreAuthorizedArgs
+        //    {
+        //        // This is the """well-known""" client ID for Azure CLI
+        //        AuthorizedAppId = "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+        //        ApplicationObjectId = serverApplication.ObjectId,
+        //        PermissionIds =
+        //        {
+        //            localDevScopeUuid.Result
+        //        }
+        //    });
 
         TodoReadRoleUuid = todoReadRoleUuid.Result;
         TodoWriteRoleUuid = todoWriteRoleUuid.Result;
@@ -144,8 +138,12 @@ public class Server
 
     public void AssignRoles(string prefix, AzureAdResources azureAdResources)
     {
-        AssignRead(prefix, AzureAdResources.LocalDevGroupName, azureAdResources.LocalDevGroupObjectId);
-        AssignWrite(prefix, AzureAdResources.LocalDevGroupName, azureAdResources.LocalDevGroupObjectId);
+        AssignRead(prefix, 
+            AzureAdResources.LocalDevGroupName, 
+            azureAdResources.LocalDevGroupObjectId);
+        AssignWrite(prefix, 
+            AzureAdResources.LocalDevGroupName, 
+            azureAdResources.LocalDevGroupObjectId);
     }
 
     public void AssignRoles(string prefix, Client client)
@@ -156,13 +154,18 @@ public class Server
 
     public void AssignRoles(string prefix, ExternalClient externalClient)
     {
-        AssignRead(prefix, ExternalClient.AppName, externalClient.ApplicationServicePrincipalObjectId);
+        AssignRead(prefix, 
+            ExternalClient.AppName, 
+            externalClient.ApplicationServicePrincipalObjectId);
     }
 
-    private AzureAD.AppRoleAssignment AssignRead(string prefix, string assigneeName, Output<string> principalObjectId)
+    private AzureAD.AppRoleAssignment AssignRead(string prefix, 
+        string assigneeName, 
+        Output<string> principalObjectId)
     {
         return new AzureAD.AppRoleAssignment(
-            $"{prefix}-{assigneeName}-{AppName}-todo-read-role-assignment", new AzureAD.AppRoleAssignmentArgs
+            $"{prefix}-{assigneeName}-{AppName}-todo-read-role-assignment", 
+            new AzureAD.AppRoleAssignmentArgs
             {
                 AppRoleId = TodoReadRoleUuid,
                 PrincipalObjectId = principalObjectId,
@@ -170,10 +173,13 @@ public class Server
             });
     }
 
-    private AzureAD.AppRoleAssignment AssignWrite(string prefix, string assigneeName, Output<string> principalObjectId)
+    private AzureAD.AppRoleAssignment AssignWrite(string prefix, 
+        string assigneeName, 
+        Output<string> principalObjectId)
     {
         return new AzureAD.AppRoleAssignment(
-            $"{prefix}-{assigneeName}-{AppName}-todo-write-role-assignment", new AzureAD.AppRoleAssignmentArgs
+            $"{prefix}-{assigneeName}-{AppName}-todo-write-role-assignment", 
+            new AzureAD.AppRoleAssignmentArgs
             {
                 AppRoleId = TodoWriteRoleUuid,
                 PrincipalObjectId = principalObjectId,

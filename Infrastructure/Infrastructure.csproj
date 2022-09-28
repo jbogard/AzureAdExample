@@ -7,10 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Pulumi" Version="3.*" />
-    <PackageReference Include="Pulumi.AzureAD" Version="5.25.0" />
-    <PackageReference Include="Pulumi.AzureNative" Version="1.*" />
-    <PackageReference Include="Pulumi.Random" Version="4.8.0" />
+    <PackageReference Include="Pulumi" Version="3.40.2" />
+    <PackageReference Include="Pulumi.AzureAD" Version="5.28.0" />
+    <PackageReference Include="Pulumi.AzureNative" Version="1.79.1" />
+    <PackageReference Include="Pulumi.Random" Version="4.8.2" />
   </ItemGroup>
 
 </Project>

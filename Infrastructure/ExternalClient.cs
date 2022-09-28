@@ -5,16 +5,17 @@ public class ExternalClient
 {
     public const string AppName = "external-client";
 
-    public ExternalClient(string prefix, Server server)
+    public ExternalClient(string prefix)
     {
-        var application = new AzureAD.Application($"{prefix}-{AppName}", new AzureAD.ApplicationArgs
-        {
-            DisplayName = "Azure AD Example External Client",
-            Api = new AzureAD.Inputs.ApplicationApiArgs
+        var application = new AzureAD.Application($"{prefix}-{AppName}",
+            new AzureAD.ApplicationArgs
             {
-                RequestedAccessTokenVersion = 2,
-            }
-        });
+                DisplayName = "Azure AD Example External Client",
+                Api = new AzureAD.Inputs.ApplicationApiArgs
+                {
+                    RequestedAccessTokenVersion = 2,
+                }
+            });
 
         var applicationSecret = new AzureAD.ApplicationPassword(
             $"{prefix}-{AppName}-password",
@@ -29,7 +30,8 @@ public class ExternalClient
                 }
             });
 
-        var servicePrincipal = new AzureAD.ServicePrincipal($"{prefix}-{AppName}-service-principal",
+        var servicePrincipal = new AzureAD.ServicePrincipal(
+            $"{prefix}-{AppName}-service-principal",
             new AzureAD.ServicePrincipalArgs
             {
                 ApplicationId = application.ApplicationId,

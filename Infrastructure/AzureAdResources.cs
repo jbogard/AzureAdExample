@@ -11,7 +11,8 @@ public class AzureAdResources
 
         var jimmyUpn = config.Require("jimmy-upn");
 
-        var jimmyUser = Output.Create(AzureAD.GetUser.InvokeAsync(new AzureAD.GetUserArgs
+        var jimmyUser = Output.Create(
+            AzureAD.GetUser.InvokeAsync(new AzureAD.GetUserArgs
         {
             UserPrincipalName = jimmyUpn
         }));

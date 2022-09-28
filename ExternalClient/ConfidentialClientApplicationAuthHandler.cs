@@ -5,7 +5,8 @@ using Shared;
 
 namespace ExternalClient;
 
-public class ConfidentialClientApplicationAuthHandler<TClient> : DelegatingHandler
+public class ConfidentialClientApplicationAuthHandler<TClient> 
+    : DelegatingHandler
 {
     private readonly IConfidentialClientApplication _app;
     private readonly ILogger<ConfidentialClientApplicationAuthHandler<TClient>> _logger;
@@ -20,7 +21,9 @@ public class ConfidentialClientApplicationAuthHandler<TClient> : DelegatingHandl
         _options = options.Value;
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    protected override async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request, 
+        CancellationToken cancellationToken)
     {
         var scopes = new[] { _options.ApplicationId + "/.default" };
         var result = await _app.AcquireTokenForClient(scopes)
@@ -28,7 +31,8 @@ public class ConfidentialClientApplicationAuthHandler<TClient> : DelegatingHandl
 
         _logger.LogInformation(result.AccessToken);
 
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", result.AccessToken);
+        request.Headers.Authorization 
+            = new AuthenticationHeaderValue("Bearer", result.AccessToken);
 
         return await base.SendAsync(request, cancellationToken);
     }
