@@ -7,7 +7,39 @@ public class ExternalClient
 
     public ExternalClient(string prefix)
     {
+        var application = new AzureAD.Application($"{prefix}-{AppName}",
+            new AzureAD.ApplicationArgs
+            {
+                DisplayName = "Azure AD Example External Client",
+                Api = new AzureAD.Inputs.ApplicationApiArgs
+                {
+                    RequestedAccessTokenVersion = 2,
+                }
+            });
 
+        var applicationSecret = new AzureAD.ApplicationPassword(
+            $"{prefix}-{AppName}-password",
+            new AzureAD.ApplicationPasswordArgs
+            {
+                ApplicationObjectId = application.ObjectId
+            }, new CustomResourceOptions
+            {
+                AdditionalSecretOutputs =
+                {
+                    "value"
+                }
+            });
+
+        var servicePrincipal = new AzureAD.ServicePrincipal(
+            $"{prefix}-{AppName}-service-principal",
+            new AzureAD.ServicePrincipalArgs
+            {
+                ApplicationId = application.ApplicationId,
+            });
+
+        ApplicationSecretValue = applicationSecret.Value;
+        ApplicationApplicationId = application.ApplicationId;
+        ApplicationServicePrincipalObjectId = servicePrincipal.ObjectId;
     }
 
     public Output<string> ApplicationSecretValue { get; set; }

@@ -18,12 +18,14 @@ public class TodoItemsController : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Roles = "Todo.Read")]
     public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
     {
         return await _context.TodoItems.ToListAsync();
     }
 
     [HttpGet("{id}")]
+    [Authorize(Roles="Todo.Read")]
     public async Task<ActionResult<TodoItem>> GetTodoItem(long id)
     {
         var todoItem = await _context.TodoItems.FindAsync(id);
@@ -37,6 +39,7 @@ public class TodoItemsController : ControllerBase
     }
 
     [HttpPut("{id}")]
+    [Authorize(Roles="Todo.Write")]
     public async Task<IActionResult> PutTodoItem(long id, TodoItem todoItem)
     {
         if (id != todoItem.Id)
@@ -64,6 +67,7 @@ public class TodoItemsController : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles="Todo.Write")]
     public async Task<ActionResult<TodoItem>> PostTodoItem(TodoItem todoItem)
     {
         _context.TodoItems.Add(todoItem);
@@ -74,6 +78,7 @@ public class TodoItemsController : ControllerBase
     }
 
     [HttpDelete("{id}")]
+    [Authorize(Roles="Todo.Write")]
     public async Task<IActionResult> DeleteTodoItem(long id)
     {
         var todoItem = await _context.TodoItems.FindAsync(id);
