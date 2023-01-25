@@ -137,8 +137,10 @@ public class Server
 
     public void AssignRoles(string prefix, Client client)
     {
-        AssignRead(prefix, Client.AppName, client.UserAssignedIdentityPrincipalId);
-        AssignWrite(prefix, Client.AppName, client.UserAssignedIdentityPrincipalId);
+        AssignRead(prefix, Client.AppName, 
+            client.UserAssignedIdentityPrincipalId);
+        AssignWrite(prefix, Client.AppName, 
+            client.UserAssignedIdentityPrincipalId);
     }
 
     public void AssignRoles(string prefix, ExternalClient externalClient)

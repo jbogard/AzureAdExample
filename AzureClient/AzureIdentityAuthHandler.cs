@@ -20,12 +20,14 @@ public class AzureIdentityAuthHandler<TClient> : DelegatingHandler
         _options = options.Value;
     }
 
-    protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, 
+    protected override async Task<HttpResponseMessage> SendAsync(
+        HttpRequestMessage request, 
         CancellationToken cancellationToken)
     {
         var scopes = new[] { _options.ApplicationId + "/.default" };
         var tokenRequestContext = new TokenRequestContext(scopes);
-        var result = await _credential.GetTokenAsync(tokenRequestContext, cancellationToken);
+        var result = await _credential.GetTokenAsync(
+            tokenRequestContext, cancellationToken);
 
         _logger.LogInformation(result.Token);
 

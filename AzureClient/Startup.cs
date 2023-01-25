@@ -42,7 +42,8 @@ public class Startup
         services.AddHttpClient<IWeatherForecastClient, WeatherForecastClient>()
             .ConfigureHttpClient((sp, client) =>
             {
-                var serverOptions = sp.GetRequiredService<IOptions<AzureAdServerApiOptions<IWeatherForecastClient>>>();
+                var serverOptions = sp.GetRequiredService<
+                    IOptions<AzureAdServerApiOptions<IWeatherForecastClient>>>();
                 client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
             })
             .AddHttpMessageHandler<AzureIdentityAuthHandler<IWeatherForecastClient>>();
@@ -51,7 +52,8 @@ public class Startup
         services.AddHttpClient<ITodoItemsClient, TodoItemsClient>()
             .ConfigureHttpClient((sp, client) =>
             {
-                var serverOptions = sp.GetRequiredService<IOptions<AzureAdServerApiOptions<ITodoItemsClient>>>();
+                var serverOptions = sp.GetRequiredService<
+                    IOptions<AzureAdServerApiOptions<ITodoItemsClient>>>();
                 client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
             })
             .AddHttpMessageHandler<AzureIdentityAuthHandler<ITodoItemsClient>>();
