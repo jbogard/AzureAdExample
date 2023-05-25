@@ -7,6 +7,8 @@ public class ExternalClient
 
     public ExternalClient(string prefix)
     {
+        #region Create External Client App Registration
+
         var application = new AzureAD.Application($"{prefix}-{AppName}",
             new AzureAD.ApplicationArgs
             {
@@ -16,6 +18,8 @@ public class ExternalClient
                     RequestedAccessTokenVersion = 2,
                 }
             });
+
+        #region Create Application Secret
 
         var applicationSecret = new AzureAD.ApplicationPassword(
             $"{prefix}-{AppName}-password",
@@ -30,6 +34,10 @@ public class ExternalClient
                 }
             });
 
+        #endregion
+
+        #region Create Managed Application Service Principal
+
         var servicePrincipal = new AzureAD.ServicePrincipal(
             $"{prefix}-{AppName}-service-principal",
             new AzureAD.ServicePrincipalArgs
@@ -37,9 +45,17 @@ public class ExternalClient
                 ApplicationId = application.ApplicationId,
             });
 
+        #endregion
+
+        #endregion
+
+        #region Set Outputs
+
         ApplicationSecretValue = applicationSecret.Value;
         ApplicationApplicationId = application.ApplicationId;
         ApplicationServicePrincipalObjectId = servicePrincipal.ObjectId;
+
+        #endregion
     }
 
     public Output<string> ApplicationSecretValue { get; set; }

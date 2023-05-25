@@ -11,10 +11,13 @@ var host = Host.CreateDefaultBuilder(args)
     })
     .ConfigureServices((context, services) =>
     {
+        #region Configure HTTP Client
+
         var clientId = context.Configuration["ClientId"];
         var clientSecret = context.Configuration["ClientSecret"];
         var tenantId = context.Configuration["TenantId"];
 
+        #region Create Token Acquirer-er
         services.AddSingleton(_ =>
         {
             var app = ConfidentialClientApplicationBuilder.Create(clientId)
@@ -24,16 +27,27 @@ var host = Host.CreateDefaultBuilder(args)
 
             return app;
         });
+        #endregion
+
+        #region Set Up Configuration Options
 
         services.Configure<AzureAdServerApiOptions<ITodoItemsClient>>(
             context.Configuration.GetSection("Server"));
         services.Configure<AzureAdServerApiOptions<IWeatherForecastClient>>(
             context.Configuration.GetSection("Server"));
 
+        #endregion
+
+        #region Set Up Auth Handler Middleware
+
         services.AddTransient<
             ConfidentialClientApplicationAuthHandler<IWeatherForecastClient>>();
         services.AddTransient<
             ConfidentialClientApplicationAuthHandler<ITodoItemsClient>>();
+
+        #endregion
+
+        #region Add Typed Http Clients
 
         services.AddHttpClient<IWeatherForecastClient, WeatherForecastClient>()
             .ConfigureHttpClient((sp, client) =>
@@ -53,6 +67,10 @@ var host = Host.CreateDefaultBuilder(args)
             })
             .AddHttpMessageHandler<
                 ConfidentialClientApplicationAuthHandler<IWeatherForecastClient>>();
+        
+        #endregion
+
+        #endregion
 
         services.AddHostedService<WeatherForecastWorker>();
         services.AddHostedService<TodoItemsWorker>();

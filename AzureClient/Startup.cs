@@ -23,6 +23,11 @@ public class Startup
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Azure Client", Version = "v1" });
         });
+
+        #region Configure HTTP Client
+
+        #region Configure Token Aquirer-er
+
         var managedIdentityClientId = Configuration["ClientId"];
         var tenantId = Configuration["TenantId"];
         var options = new DefaultAzureCredentialOptions
@@ -33,6 +38,10 @@ public class Startup
 
         services.AddSingleton<TokenCredential>(new DefaultAzureCredential(options));
         services.AddTransient(typeof(AzureIdentityAuthHandler<>));
+
+        #endregion
+
+        #region Add Http Clients
 
         var serverConfigSection = Configuration.GetSection("Server");
 
@@ -53,6 +62,10 @@ public class Startup
                 client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
             })
             .AddHttpMessageHandler<AzureIdentityAuthHandler<ITodoItemsClient>>();
+
+        #endregion
+
+        #endregion
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

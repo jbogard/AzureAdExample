@@ -13,6 +13,8 @@ builder.Services.AddControllers();
 builder.Services.AddDbContext<TodoContext>(opt =>
     opt.UseInMemoryDatabase("TodoList"));
 
+#region Configure Swagger Gen
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "Server", Version = "v1" });
@@ -37,9 +39,15 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+#endregion
+
+#region Add Web API Authentication
+
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 builder.Services.AddMicrosoftIdentityWebApiAuthentication(builder.Configuration);
+
+#endregion
 
 var app = builder.Build();
 
@@ -50,6 +58,8 @@ if (builder.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
+#region Configure Swagger UI
+
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
@@ -58,6 +68,8 @@ app.UseSwaggerUI(options =>
     options.OAuthScopeSeparator(" ");
     options.OAuthUsePkce();
 });
+
+#endregion
 
 app.UseHttpsRedirection();
 

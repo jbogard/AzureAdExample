@@ -12,11 +12,17 @@ public class Client
         AzureNative.Web.AppServicePlan appServicePlan,
         Server server)
     {
+        #region Create App Service
+
+        #region Create User Assigned Identity
+
         var userAssignedIdentity = new AzureNative.ManagedIdentity.UserAssignedIdentity($"{prefix}-{AppName}-user",
             new AzureNative.ManagedIdentity.UserAssignedIdentityArgs
             {
                 ResourceGroupName = resourceGroup.Name
             });
+
+        #endregion
 
         var webApp = new AzureNative.Web.WebApp($"{prefix}-{AppName}", new AzureNative.Web.WebAppArgs
         {
@@ -39,6 +45,9 @@ public class Client
                     }
                 }
             },
+
+            #region Set Managed Identity
+
             Identity = new AzureNative.Web.Inputs.ManagedServiceIdentityArgs
             {
                 Type = AzureNative.Web.ManagedServiceIdentityType.UserAssigned,
@@ -51,11 +60,20 @@ public class Client
                     return im;
                 })
             }
+
+            #endregion
+
         });
+
+        #endregion
+
+        #region Set Outputs
 
         UserAssignedIdentityClientId = userAssignedIdentity.ClientId;
         UserAssignedIdentityPrincipalId = userAssignedIdentity.PrincipalId;
         AppServiceDefaultHostName = webApp.DefaultHostName;
+
+        #endregion
 
     }
 

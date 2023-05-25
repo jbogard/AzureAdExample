@@ -22,7 +22,9 @@ class MyStack : Stack
         var externalClient = new ExternalClient(prefix);
 
         server.AssignRoles(prefix, azureAdResources);
+
         server.AssignRoles(prefix, externalClient);
+
         server.AssignRoles(prefix, client);
 
         ExternalClientSecret = externalClient.ApplicationSecretValue;
