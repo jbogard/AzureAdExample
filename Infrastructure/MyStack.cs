@@ -45,10 +45,9 @@ class MyStack : Stack
                 Sku = new AzureNative.Web.Inputs.SkuDescriptionArgs
                 {
                     Capacity = 1,
-                    Name = "F1",
-                    Tier = "Free",
-                    Size = "F1",
-                    Family = "F"
+                    Name = "B1",
+                    Tier = "Basic",
+                    Size = "B1"
                 },
                 Reserved = true
             });
