@@ -51,14 +51,7 @@ public class Client
             Identity = new AzureNative.Web.Inputs.ManagedServiceIdentityArgs
             {
                 Type = AzureNative.Web.ManagedServiceIdentityType.UserAssigned,
-                UserAssignedIdentities = userAssignedIdentity.Id.Apply(id =>
-                {
-                    var im = new Dictionary<string, object>
-                    {
-                        {id, new Dictionary<string, object>()}
-                    };
-                    return im;
-                })
+                UserAssignedIdentities = userAssignedIdentity.Id
             }
 
             #endregion
