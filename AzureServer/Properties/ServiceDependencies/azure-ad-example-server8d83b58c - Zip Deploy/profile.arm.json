@@ -7,21 +7,21 @@
   "parameters": {
     "resourceGroupName": {
       "type": "string",
-      "defaultValue": "azure-ad-example3f093695",
+      "defaultValue": "azure-ad-example8cce6e24",
       "metadata": {
         "description": "Name of the resource group for the resource. It is recommended to put resources under same resource group for better tracking."
       }
     },
     "resourceGroupLocation": {
       "type": "string",
-      "defaultValue": "swedencentral",
+      "defaultValue": "polandcentral",
       "metadata": {
         "description": "Location of the resource group. Resource groups could have different location than resources, however by default we use API versions from latest hybrid profile which support all locations for resource types we support."
       }
     },
     "resourceName": {
       "type": "string",
-      "defaultValue": "azure-ad-example-server2f229655",
+      "defaultValue": "azure-ad-example-server8d83b58c",
       "metadata": {
         "description": "Name of the main resource to be created by this template."
       }
