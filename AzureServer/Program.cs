@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using AzureServer;
 using AzureServer.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Logging;
@@ -46,6 +47,10 @@ builder.Services.AddSwaggerGen(options =>
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
 builder.Services.AddMicrosoftIdentityWebApiAuthentication(builder.Configuration);
+builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, config =>
+{
+    config.MapInboundClaims = false;
+});
 
 #endregion
 
