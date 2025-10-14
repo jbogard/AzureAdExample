@@ -23,7 +23,7 @@ public class Server
             HttpsOnly = true,
             SiteConfig = new AzureNative.Web.Inputs.SiteConfigArgs
             {
-                LinuxFxVersion = "DOTNETCORE|6.0",
+                LinuxFxVersion = "DOTNETCORE|8.0",
                 AppCommandLine = "dotnet AzureServer.dll"
             },
         });
@@ -151,6 +151,20 @@ public class Server
                         localDevScopeUuid.Result
                     }
                 });
+        
+        var azureCli =
+            new AzureAD.ApplicationPreAuthorized(
+                $"{prefix}-{AppName}-preauth-azure-cli",
+                new AzureAD.ApplicationPreAuthorizedArgs
+                {
+                    // This is the """well-known""" client ID for Microsoft Azure CLI
+                    AuthorizedAppId = "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
+                    ApplicationObjectId = serverApplication.ObjectId,
+                    PermissionIds =
+                    {
+                        localDevScopeUuid.Result
+                    }
+                });
         #endregion
 
         #region Set Outputs
@@ -195,14 +209,14 @@ public class Server
 
     #region Assign Local Dev Group Roles
 
-    public void AssignRoles(string prefix, AzureAdResources azureAdResources)
+    public void AssignRoles(string prefix, EntraIdResources entraIdResources)
     {
         AssignRead(prefix,
-            AzureAdResources.LocalDevGroupName,
-            azureAdResources.LocalDevGroupObjectId);
+            EntraIdResources.LocalDevGroupName,
+            entraIdResources.LocalDevGroupObjectId);
         AssignWrite(prefix,
-            AzureAdResources.LocalDevGroupName,
-            azureAdResources.LocalDevGroupObjectId);
+            EntraIdResources.LocalDevGroupName,
+            entraIdResources.LocalDevGroupObjectId);
     }
 
     #endregion

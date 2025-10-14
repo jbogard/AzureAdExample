@@ -7,13 +7,13 @@ class MyStack : Stack
 {
     public MyStack()
     {
-        const string prefix = "azure-ad-example";
+        const string prefix = "entra-id-example";
 
         var resourceGroup = new AzureNative.Resources.ResourceGroup(prefix);
 
         var appServicePlan = CreateAppServicePlan(prefix, resourceGroup);
 
-        var azureAdResources = new AzureAdResources(prefix);
+        var entraIdResources = new EntraIdResources(prefix);
 
         var server = new Server(prefix, resourceGroup, appServicePlan);
 
@@ -21,7 +21,7 @@ class MyStack : Stack
 
         var externalClient = new ExternalClient(prefix);
 
-        server.AssignRoles(prefix, azureAdResources);
+        server.AssignRoles(prefix, entraIdResources);
 
         server.AssignRoles(prefix, externalClient);
 

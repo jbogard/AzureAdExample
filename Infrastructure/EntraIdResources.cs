@@ -1,11 +1,11 @@
 ﻿using Pulumi;
 using AzureAD = Pulumi.AzureAD;
 
-public class AzureAdResources
+public class EntraIdResources
 {
     public const string LocalDevGroupName = "localdev";
 
-    public AzureAdResources(string prefix)
+    public EntraIdResources(string prefix)
     {
         #region Set Up Local Dev Group
 
@@ -20,7 +20,7 @@ public class AzureAdResources
             }));
         var devGroup = new AzureAD.Group($"{prefix}-{LocalDevGroupName}", new AzureAD.GroupArgs
         {
-            DisplayName = "Azure AD Example Local Dev",
+            DisplayName = "Microsoft Entra ID Example Local Dev",
             SecurityEnabled = true
         });
         var jimmyDevGroupMember = new AzureAD.GroupMember($"{prefix}-jimmy-{LocalDevGroupName}-member",

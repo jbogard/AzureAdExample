@@ -1,3 +1,3 @@
 config:
   Infrastructure:jimmy-upn: jimmy.bogard_gmail.com#EXT#@jimmybogardgmail.onmicrosoft.com
-  azure-native:location: australiaeast
+  azure-native:location: westeurope

@@ -33,7 +33,7 @@ builder.Services.AddSwaggerGen(options =>
                 TokenUrl = new Uri($"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token"),
                 Scopes = new Dictionary<string, string>
                 {
-                    {"api://azure-ad-example-server/LocalDev", "Azure Server Web API"}
+                    {"api://entra-id-example-server/LocalDev", "Azure Server Web API"}
                 }
             }
         }

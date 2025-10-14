@@ -10,11 +10,11 @@ public class ConfidentialClientApplicationAuthHandler<TClient>
 {
     private readonly IConfidentialClientApplication _app;
     private readonly ILogger<ConfidentialClientApplicationAuthHandler<TClient>> _logger;
-    private readonly AzureAdServerApiOptions<TClient> _options;
+    private readonly EntraIdServerApiOptions<TClient> _options;
 
     public ConfidentialClientApplicationAuthHandler(IConfidentialClientApplication app, 
         ILogger<ConfidentialClientApplicationAuthHandler<TClient>> logger,
-        IOptions<AzureAdServerApiOptions<TClient>> options)
+        IOptions<EntraIdServerApiOptions<TClient>> options)
     {
         _app = app;
         _logger = logger;

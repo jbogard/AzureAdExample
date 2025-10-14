@@ -45,20 +45,20 @@ public class Startup
 
         var serverConfigSection = Configuration.GetSection("Server");
 
-        services.Configure<AzureAdServerApiOptions<IWeatherForecastClient>>(serverConfigSection);
+        services.Configure<EntraIdServerApiOptions<IWeatherForecastClient>>(serverConfigSection);
         services.AddHttpClient<IWeatherForecastClient, WeatherForecastClient>()
             .ConfigureHttpClient((sp, client) =>
             {
-                var serverOptions = sp.GetRequiredService<IOptions<AzureAdServerApiOptions<IWeatherForecastClient>>>();
+                var serverOptions = sp.GetRequiredService<IOptions<EntraIdServerApiOptions<IWeatherForecastClient>>>();
                 client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
             })
             .AddHttpMessageHandler<AzureIdentityAuthHandler<IWeatherForecastClient>>();
 
-        services.Configure<AzureAdServerApiOptions<ITodoItemsClient>>(serverConfigSection);
+        services.Configure<EntraIdServerApiOptions<ITodoItemsClient>>(serverConfigSection);
         services.AddHttpClient<ITodoItemsClient, TodoItemsClient>()
             .ConfigureHttpClient((sp, client) =>
             {
-                var serverOptions = sp.GetRequiredService<IOptions<AzureAdServerApiOptions<ITodoItemsClient>>>();
+                var serverOptions = sp.GetRequiredService<IOptions<EntraIdServerApiOptions<ITodoItemsClient>>>();
                 client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
             })
             .AddHttpMessageHandler<AzureIdentityAuthHandler<ITodoItemsClient>>();

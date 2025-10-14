@@ -9,11 +9,11 @@ public class AzureIdentityAuthHandler<TClient> : DelegatingHandler
 {
     private readonly TokenCredential _credential;
     private readonly ILogger<AzureIdentityAuthHandler<TClient>> _logger;
-    private readonly AzureAdServerApiOptions<TClient> _options;
+    private readonly EntraIdServerApiOptions<TClient> _options;
 
     public AzureIdentityAuthHandler(TokenCredential credential, 
         ILogger<AzureIdentityAuthHandler<TClient>> logger,
-        IOptions<AzureAdServerApiOptions<TClient>> options)
+        IOptions<EntraIdServerApiOptions<TClient>> options)
     {
         _credential = credential;
         _logger = logger;

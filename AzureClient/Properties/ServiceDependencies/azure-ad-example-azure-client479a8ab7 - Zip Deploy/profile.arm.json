@@ -7,7 +7,7 @@
   "parameters": {
     "resourceGroupName": {
       "type": "string",
-      "defaultValue": "azure-ad-example8cce6e24",
+      "defaultValue": "entra-id-exampleee20cc1f",
       "metadata": {
         "description": "Name of the resource group for the resource. It is recommended to put resources under same resource group for better tracking."
       }
@@ -21,7 +21,7 @@
     },
     "resourceName": {
       "type": "string",
-      "defaultValue": "azure-ad-example-azure-client479a8ab7",
+      "defaultValue": "entra-id-example-azure-clientfcae7b91",
       "metadata": {
         "description": "Name of the main resource to be created by this template."
       }

@@ -31,9 +31,9 @@ var host = Host.CreateDefaultBuilder(args)
 
         #region Set Up Configuration Options
 
-        services.Configure<AzureAdServerApiOptions<ITodoItemsClient>>(
+        services.Configure<EntraIdServerApiOptions<ITodoItemsClient>>(
             context.Configuration.GetSection("Server"));
-        services.Configure<AzureAdServerApiOptions<IWeatherForecastClient>>(
+        services.Configure<EntraIdServerApiOptions<IWeatherForecastClient>>(
             context.Configuration.GetSection("Server"));
 
         #endregion
@@ -53,7 +53,7 @@ var host = Host.CreateDefaultBuilder(args)
             .ConfigureHttpClient((sp, client) =>
             {
                 var serverOptions = sp.GetRequiredService<
-                    IOptions<AzureAdServerApiOptions<IWeatherForecastClient>>>();
+                    IOptions<EntraIdServerApiOptions<IWeatherForecastClient>>>();
                 client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
             })
             .AddHttpMessageHandler<
@@ -62,7 +62,7 @@ var host = Host.CreateDefaultBuilder(args)
             .ConfigureHttpClient((sp, client) =>
             {
                 var serverOptions = sp.GetRequiredService<
-                    IOptions<AzureAdServerApiOptions<ITodoItemsClient>>>();
+                    IOptions<EntraIdServerApiOptions<ITodoItemsClient>>>();
                 client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
             })
             .AddHttpMessageHandler<
