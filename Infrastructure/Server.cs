@@ -44,7 +44,7 @@ public class Server
 
         var serverApplication = new AzureAD.Application($"{prefix}-{AppName}", new AzureAD.ApplicationArgs
         {
-            DisplayName = "Azure AD Example Server",
+            DisplayName = "Entra ID Example Server",
             IdentifierUris =
             {
                 $"api://{prefix}-{AppName}"
