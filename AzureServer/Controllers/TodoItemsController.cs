@@ -18,7 +18,7 @@ public class TodoItemsController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Roles="Todo.Read")]
+    [Authorize(Roles = "Todo.Read")]
     public async Task<ActionResult<IEnumerable<TodoItem>>> GetTodoItems()
     {
         return await _context.TodoItems.ToListAsync();

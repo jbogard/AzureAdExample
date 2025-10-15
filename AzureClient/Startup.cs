@@ -24,6 +24,10 @@ public class Startup
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Azure Client", Version = "v1" });
         });
 
+        #region Configure HTTP Client
+
+        #region Configure Token Aquirer-er
+
         var managedIdentityClientId = Configuration["ClientId"];
         var tenantId = Configuration["TenantId"];
         var options = new DefaultAzureCredentialOptions
@@ -33,30 +37,35 @@ public class Startup
         };
 
         services.AddSingleton<TokenCredential>(new DefaultAzureCredential(options));
-
         services.AddTransient(typeof(AzureIdentityAuthHandler<>));
+
+        #endregion
+
+        #region Add Http Clients
 
         var serverConfigSection = Configuration.GetSection("Server");
 
-        services.Configure<AzureAdServerApiOptions<IWeatherForecastClient>>(serverConfigSection);
+        services.Configure<EntraIdServerApiOptions<IWeatherForecastClient>>(serverConfigSection);
         services.AddHttpClient<IWeatherForecastClient, WeatherForecastClient>()
             .ConfigureHttpClient((sp, client) =>
             {
-                var serverOptions = sp.GetRequiredService<
-                    IOptions<AzureAdServerApiOptions<IWeatherForecastClient>>>();
+                var serverOptions = sp.GetRequiredService<IOptions<EntraIdServerApiOptions<IWeatherForecastClient>>>();
                 client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
             })
             .AddHttpMessageHandler<AzureIdentityAuthHandler<IWeatherForecastClient>>();
 
-        services.Configure<AzureAdServerApiOptions<ITodoItemsClient>>(serverConfigSection);
+        services.Configure<EntraIdServerApiOptions<ITodoItemsClient>>(serverConfigSection);
         services.AddHttpClient<ITodoItemsClient, TodoItemsClient>()
             .ConfigureHttpClient((sp, client) =>
             {
-                var serverOptions = sp.GetRequiredService<
-                    IOptions<AzureAdServerApiOptions<ITodoItemsClient>>>();
+                var serverOptions = sp.GetRequiredService<IOptions<EntraIdServerApiOptions<ITodoItemsClient>>>();
                 client.BaseAddress = new Uri(serverOptions.Value.BaseAddress);
             })
             .AddHttpMessageHandler<AzureIdentityAuthHandler<ITodoItemsClient>>();
+
+        #endregion
+
+        #endregion
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

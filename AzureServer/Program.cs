@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using AzureServer;
 using AzureServer.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Logging;
@@ -8,19 +9,16 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
-
-builder.Services.AddMicrosoftIdentityWebApiAuthentication(builder.Configuration);
-
 builder.Services.AddControllers();
 
 builder.Services.AddDbContext<TodoContext>(opt =>
     opt.UseInMemoryDatabase("TodoList"));
 
+#region Configure Swagger Gen
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "Server", Version = "v1" });
-
     options.OperationFilter<SwaggerAuthorizeOperationFilter>();
 
     var tenantId = builder.Configuration["AzureAd:TenantId"];
@@ -35,12 +33,26 @@ builder.Services.AddSwaggerGen(options =>
                 TokenUrl = new Uri($"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token"),
                 Scopes = new Dictionary<string, string>
                 {
-                    {"api://azure-ad-example-server/LocalDev", "Azure Server Web API"}
+                    {"api://entra-id-example-server/LocalDev", "Azure Server Web API"}
                 }
             }
         }
     });
 });
+
+#endregion
+
+#region Add Web API Authentication
+
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
+
+builder.Services.AddMicrosoftIdentityWebApiAuthentication(builder.Configuration);
+builder.Services.Configure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, config =>
+{
+    config.MapInboundClaims = false;
+});
+
+#endregion
 
 var app = builder.Build();
 
@@ -51,6 +63,8 @@ if (builder.Environment.IsDevelopment())
     app.UseDeveloperExceptionPage();
 }
 
+#region Configure Swagger UI
+
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
@@ -59,6 +73,8 @@ app.UseSwaggerUI(options =>
     options.OAuthScopeSeparator(" ");
     options.OAuthUsePkce();
 });
+
+#endregion
 
 app.UseHttpsRedirection();
 

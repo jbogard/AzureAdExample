@@ -7,13 +7,13 @@ class MyStack : Stack
 {
     public MyStack()
     {
-        const string prefix = "azure-ad-example";
+        const string prefix = "entra-id-example";
 
         var resourceGroup = new AzureNative.Resources.ResourceGroup(prefix);
 
         var appServicePlan = CreateAppServicePlan(prefix, resourceGroup);
 
-        var azureAdResources = new AzureAdResources(prefix);
+        var entraIdResources = new EntraIdResources(prefix);
 
         var server = new Server(prefix, resourceGroup, appServicePlan);
 
@@ -21,9 +21,11 @@ class MyStack : Stack
 
         var externalClient = new ExternalClient(prefix);
 
-        server.AssignRoles(prefix, azureAdResources);
-        server.AssignRoles(prefix, client);
+        server.AssignRoles(prefix, entraIdResources);
+
         server.AssignRoles(prefix, externalClient);
+
+        server.AssignRoles(prefix, client);
 
         ExternalClientSecret = externalClient.ApplicationSecretValue;
         ExternalClientApplicationId = externalClient.ApplicationApplicationId;
@@ -45,10 +47,9 @@ class MyStack : Stack
                 Sku = new AzureNative.Web.Inputs.SkuDescriptionArgs
                 {
                     Capacity = 1,
-                    Name = "F1",
-                    Tier = "Free",
-                    Size = "F1",
-                    Family = "F"
+                    Name = "B1",
+                    Tier = "Basic",
+                    Size = "B1"
                 },
                 Reserved = true
             });
